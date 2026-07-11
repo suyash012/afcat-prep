@@ -1,0 +1,31 @@
+{
+  "_note": "Replace 'starter' paper with real AFCAT past papers. Format: one block per question separated by blank lines. Q: text, A)/B)/C)/D) options, ANS: A/B/C/D, EXP: explanation. The app also supports: (1) paste-paper flow saved to localStorage (paste once, used forever), (2) fetch from URL via CORS proxy (addPaperFromURL). See README at bottom of index.html.",
+  "papers": [
+    {
+      "id": "starter-1",
+      "year": "Starter",
+      "shift": "Sample",
+      "source": "Starter practice set — replace with real AFCAT papers. Pattern: 25 Eng + 18 Math + 25 GA + 32 Reasoning = 100 Qs, 120 min.",
+      "questions": [
+        { "q": "Synonym of CANDID", "opts": ["Secretive", "Frank and open", "Rude", "Shy"], "ans": 1, "exp": "Candid = frank, honest. From Latin candidus (white, pure)." },
+        { "q": "Antonym of OPTIMISTIC", "opts": ["Hopeful", "Cheerful", "Pessimistic", "Positive"], "ans": 2, "exp": "Optimist expects good; pessimist expects bad." },
+        { "q": "She ___ to the market every Sunday.", "opts": ["go", "goes", "going", "gone"], "ans": 1, "exp": "Present simple for habits; 3rd person singular takes -es." },
+        { "q": "Idiom: 'A blessing in disguise' means", "opts": ["Hidden blessing", "A misfortune that turns out well", "Obvious loss", "Fake gift"], "ans": 1, "exp": "Something that appears bad initially but results in good." },
+        { "q": "Voice: 'The letter was written by her' — active form", "opts": ["She wrote the letter", "She writes the letter", "She has written the letter", "She was writing"], "ans": 0, "exp": "Passive was/were + V3 → active: subject + V2 + object." }
+      ]
+    },
+    {
+      "id": "starter-2",
+      "year": "Starter",
+      "shift": "Math Sample",
+      "source": "Starter math set",
+      "questions": [
+        { "q": "20% of 500 = ?", "opts": ["50", "100", "150", "200"], "ans": 1, "exp": "20% = 1/5. 1/5 of 500 = 100." },
+        { "q": "If price increases by 20%, by what % must consumption decrease to keep expense same?", "opts": ["20%", "16.67%", "25%", "10%"], "ans": 1, "exp": "100 × 1.2 = 120. New qty = 100/120 = 0.8333. Decrease = 16.67%." },
+        { "q": "SP = ₹1200, profit = 20%. CP = ?", "opts": ["₹1000", "₹960", "₹1440", "₹1100"], "ans": 0, "exp": "SP = CP × 1.2 → CP = 1200/1.2 = 1000." },
+        { "q": "Simple interest on ₹5000 at 8% for 2 years", "opts": ["₹400", "₹800", "₹500", "₹600"], "ans": 1, "exp": "SI = P×R×T/100 = 5000×8×2/100 = 800." },
+        { "q": "Ratio 3:5, sum = 80. Larger part?", "opts": ["30", "40", "50", "60"], "ans": 2, "exp": "Total parts = 8. Per part = 10. Larger = 5×10 = 50." }
+      ]
+    }
+  ]
+}

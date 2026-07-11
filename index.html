@@ -533,6 +533,17 @@
   }
   .workflow-step h4 { font-size: 15px; margin-bottom: 6px; }
   .workflow-step p { font-size: 13px; color: #4a4a4a; line-height: 1.5; }
+
+  .paper-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 8px; font-size: 13px; cursor: pointer; border-radius: 4px;
+  }
+  .paper-item:hover { background: #ececeb; }
+  .paper-item .paper-meta { font-size: 11px; color: #9b9a97; }
+  .paper-item .paper-del {
+    opacity: 0; color: #e74c3c; cursor: pointer; padding: 0 4px;
+  }
+  .paper-item:hover .paper-del { opacity: 1; }
 </style>
 </head>
 <body>
@@ -568,6 +579,11 @@
   <h3>🧩 Reasoning</h3>
   <div class="sidebar-item" onclick="openTopic('reasoning', 'Blood Relations')"><span class="icon">👨‍👩‍👧</span> Blood Relations</div>
   <div class="sidebar-item" onclick="openTopic('reasoning', 'Series & Patterns')"><span class="icon">🔢</span> Series & Patterns</div>
+
+  <h3>📋 Past Papers</h3>
+  <div id="papersList"></div>
+  <div class="sidebar-item" onclick="addPaperFromURL()" style="font-size:13px; color:#2383e2;"><span class="icon">🌐</span> Add from URL</div>
+  <div class="sidebar-item" onclick="addPaperFromPaste()" style="font-size:13px; color:#2383e2;"><span class="icon">📋</span> Add from paste</div>
 </div>
 
 <div class="page" id="page">
@@ -1718,8 +1734,215 @@ renderBlocks = function() {
   }, 50);
 };
 
+// ===== Past Papers =====
+const CORS_PROXIES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://api.codetabs.com/v1/proxy/?quest='
+];
+
+function getPapers() {
+  return JSON.parse(localStorage.getItem('pastPapers') || '[]');
+}
+function savePaper(paper) {
+  const papers = getPapers();
+  // dedupe by id
+  const idx = papers.findIndex(p => p.id === paper.id);
+  if (idx >= 0) papers[idx] = paper; else papers.push(paper);
+  localStorage.setItem('pastPapers', JSON.stringify(papers));
+  renderPapersList();
+}
+function deletePaper(id) {
+  if (!confirm('Delete this paper?')) return;
+  const papers = getPapers().filter(p => p.id !== id);
+  localStorage.setItem('pastPapers', JSON.stringify(papers));
+  renderPapersList();
+}
+
+async function loadBundledPapers() {
+  // Seed localStorage from pastpapers.json on first visit
+  const seeded = localStorage.getItem('pastPapersSeeded');
+  if (seeded) return;
+  try {
+    const res = await fetch('./pastpapers.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.papers && Array.isArray(data.papers)) {
+      const existing = getPapers();
+      const existingIds = new Set(existing.map(p => p.id));
+      let added = 0;
+      for (const p of data.papers) {
+        if (!existingIds.has(p.id)) { existing.push(p); added++; }
+      }
+      if (added) localStorage.setItem('pastPapers', JSON.stringify(existing));
+    }
+    localStorage.setItem('pastPapersSeeded', '1');
+  } catch (e) { /* offline or 404 — fine */ }
+}
+
+function renderPapersList() {
+  const el = document.getElementById('papersList');
+  if (!el) return;
+  const papers = getPapers();
+  if (!papers.length) {
+    el.innerHTML = '<div style="font-size:12px; color:#9b9a97; padding:6px 8px;">No papers yet. Paste a paper or fetch from URL →</div>';
+    return;
+  }
+  el.innerHTML = papers.map(p => `
+    <div class="paper-item" onclick="startPaperPractice('${p.id}')">
+      <div>
+        <div>📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
+        <div class="paper-meta">${p.questions.length} Qs</div>
+      </div>
+      <span class="paper-del" onclick="event.stopPropagation(); deletePaper('${p.id}')" title="Delete">✕</span>
+    </div>
+  `).join('');
+}
+
+function addPaperFromURL() {
+  const url = prompt('Paste URL of a past paper (text or JSON):');
+  if (!url) return;
+  addPaperFromURLGo(url);
+}
+
+async function addPaperFromURLGo(url) {
+  // Try CORS proxies in order
+  const status = document.createElement('div');
+  status.style.cssText = 'position:fixed;top:20px;right:20px;background:#333;color:white;padding:12px;border-radius:6px;z-index:9999;font-size:13px;';
+  status.textContent = 'Fetching...';
+  document.body.appendChild(status);
+
+  let text = null, lastErr = '';
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const res = await fetch(proxy + encodeURIComponent(url));
+      if (res.ok) { text = await res.text(); break; }
+      lastErr = proxy + ' → ' + res.status;
+    } catch (e) { lastErr = proxy + ' → ' + e.message; }
+  }
+  if (!text) {
+    status.textContent = 'All proxies failed. ' + lastErr + ' — try paste instead.';
+    setTimeout(() => status.remove(), 5000);
+    return;
+  }
+
+  // Try JSON first, then text parse
+  let questions = [];
+  try {
+    const j = JSON.parse(text);
+    questions = j.questions || (Array.isArray(j) ? j : []);
+  } catch (e) {
+    questions = parsePastyPaper(text);
+  }
+
+  if (!questions.length) {
+    status.textContent = 'No questions parsed. Format must be Q:/A)B)C)D)/ANS:/EXP: blocks. Try paste instead.';
+    status.style.background = '#e74c3c';
+    setTimeout(() => status.remove(), 6000);
+    return;
+  }
+
+  const id = 'url-' + Date.now();
+  const paper = {
+    id,
+    year: new URL(url).hostname || 'From URL',
+    shift: new Date().toLocaleDateString(),
+    source: url,
+    questions
+  };
+  savePaper(paper);
+  status.textContent = `✓ Added ${questions.length} questions from ${paper.year}`;
+  status.style.background = '#2ecc71';
+  setTimeout(() => status.remove(), 3000);
+}
+
+function addPaperFromPaste() {
+  // Open a modal with textarea
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:white;padding:24px;border-radius:8px;max-width:600px;width:90%;max-height:80vh;overflow:auto;">
+      <h2 style="margin:0 0 8px;">📋 Add Past Paper (paste)</h2>
+      <p style="font-size:12px;color:#787774;margin:0 0 12px;">Format — one blank line between questions:</p>
+      <pre style="font-size:11px;background:#f7f6f3;padding:8px;border-radius:4px;margin:0 0 12px;">Q: Question text
+A) Option 1
+B) Option 2
+C) Option 3
+D) Option 4
+ANS: B
+EXP: Why B is correct</pre>
+      <textarea id="pastePaperText" rows="12" style="width:100%;padding:8px;border:1px solid #ebebeb;border-radius:4px;font-family:monospace;font-size:12px;" placeholder="Paste here..."></textarea>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+        <button id="cancelPaste" style="padding:8px 16px;border:1px solid #ebebeb;background:white;border-radius:4px;cursor:pointer;">Cancel</button>
+        <button id="savePaste" style="padding:8px 16px;background:#2383e2;color:white;border:none;border-radius:4px;cursor:pointer;">Save Paper</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector('#cancelPaste').onclick = () => modal.remove();
+  modal.querySelector('#savePaste').onclick = () => {
+    const text = modal.querySelector('#pastePaperText').value.trim();
+    if (!text) { alert('Paste some text first.'); return; }
+    const questions = parsePastyPaper(text);
+    if (!questions.length) { alert('No questions parsed. Check the format.'); return; }
+    const id = 'paste-' + Date.now();
+    const paper = {
+      id,
+      year: 'Pasted',
+      shift: new Date().toLocaleDateString(),
+      source: 'Manual paste',
+      questions
+    };
+    savePaper(paper);
+    modal.remove();
+    alert(`✓ Added ${questions.length} questions to Past Papers sidebar.`);
+  };
+}
+
+function startPaperPractice(id) {
+  const paper = getPapers().find(p => p.id === id);
+  if (!paper) return;
+  practiceState.questions = paper.questions;
+  practiceState.paperMeta = paper;
+  openPractice();
+  startPracticeSession();
+}
+
+// Update renderPracticeSetup to include Past Papers as a source
+const _origRenderSourceOptions = renderSourceOptions;
+renderSourceOptions = function() {
+  _origRenderSourceOptions();
+  // Append Past Papers option if any exist
+  const papers = getPapers();
+  if (!papers.length) return;
+  const srcEl = document.getElementById('sourceOptions');
+  const btns = document.querySelectorAll('.source-picker button');
+  // Add a 4th source button dynamically
+  if (!document.querySelector('.source-picker button[data-src="papers"]')) {
+    const btn = document.createElement('button');
+    btn.dataset.src = 'papers';
+    btn.className = practiceState.source === 'papers' ? 'active' : '';
+    btn.textContent = '📋 Past Papers';
+    btn.onclick = () => setPracticeSource('papers');
+    btns[0]?.parentElement?.appendChild(btn);
+  }
+  // Render paper list when source is 'papers'
+  if (practiceState.source === 'papers') {
+    srcEl.innerHTML = `
+      <p style="font-size:13px;color:#787774;margin-top:16px;">Pick a paper (${papers.length} saved):</p>
+      ${papers.map(p => `
+        <button class="primary" style="display:block;width:100%;margin:6px 0;padding:12px;background:white;border:1px solid #ebebeb;border-radius:6px;cursor:pointer;text-align:left;font-size:14px;color:#333;" onclick="startPaperPractice('${p.id}')">
+          📄 <b>${p.year}${p.shift ? ' · ' + p.shift : ''}</b>
+          <div style="font-size:11px;color:#9b9a97;margin-top:2px;">${p.questions.length} Qs · ${p.source || 'no source'}</div>
+        </button>
+      `).join('')}
+    `;
+  }
+};
+
 // Init
 loadFromStorage();
+loadBundledPapers().then(renderPapersList);
 renderHome();
 </script>
 
