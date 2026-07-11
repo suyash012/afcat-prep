@@ -324,7 +324,7 @@ tailwind.config = {
       </div>
     </div>
 
-    <!-- ===== VIEW: TACTICAL NOTES (Home + Topic editor) ===== -->
+    <!-- ===== VIEW: TACTICAL NOTES (Dossier layout) ===== -->
     <div id="notesHomeView" class="hidden">
       <header class="bg-surface border-b border-outline-variant sticky top-16 z-30">
         <div class="max-w-[1440px] mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -337,12 +337,67 @@ tailwind.config = {
               <span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
               <input id="notesSearch" type="text" placeholder="Search intel..." oninput="filterNotes(this.value)" class="w-full bg-surface-container-low border border-outline-variant text-sm pl-8 pr-3 py-1.5 rounded focus:outline-none focus:border-secondary">
             </div>
-            <button class="px-3 py-1.5 bg-primary text-on-primary text-xs font-bold uppercase tracking-widest rounded hover:opacity-90 whitespace-nowrap" onclick="aiAssist()">✨ AI Assist</button>
-            <button class="px-3 py-1.5 border border-outline-variant text-on-surface-variant text-xs font-bold uppercase tracking-widest rounded hover:bg-surface-container whitespace-nowrap" onclick="resetNotes()" title="Reset to default topics">↺ Reset</button>
+            <button class="px-3 py-1.5 bg-primary text-on-primary text-xs font-bold uppercase tracking-widest rounded hover:opacity-90 whitespace-nowrap" onclick="aiAssist()">✨ AI</button>
+            <button class="px-3 py-1.5 border border-outline-variant text-on-surface-variant text-xs font-bold uppercase tracking-widest rounded hover:bg-surface-container whitespace-nowrap" onclick="resetNotes()" title="Reset to defaults">↺ Reset</button>
           </div>
         </div>
       </header>
-      <div class="max-w-[1440px] mx-auto p-4 md:p-8 space-y-6" id="notesHomeContent"></div>
+      <!-- Page title + filter chips -->
+      <div class="max-w-[1440px] mx-auto px-4 md:px-8 pt-6 pb-2 flex flex-col md:flex-row justify-between items-start md:items-end gap-3 border-b border-outline-variant">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold text-primary">Tactical Notes Dossier</h2>
+          <p class="text-sm text-on-surface-variant">Classified Study Materials & Strategic Insights.</p>
+        </div>
+        <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2" id="notesFilterChips">
+          <button data-filter="all" onclick="setNotesFilter('all')" class="filter-chip px-4 py-2 bg-primary text-on-primary rounded text-[10px] font-bold uppercase tracking-widest border border-primary hover:bg-primary-container transition-colors shadow-sm whitespace-nowrap">All Intel</button>
+          <button data-filter="english" onclick="setNotesFilter('english')" class="filter-chip px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors whitespace-nowrap">English</button>
+          <button data-filter="math" onclick="setNotesFilter('math')" class="filter-chip px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors whitespace-nowrap">Mathematics</button>
+          <button data-filter="ga" onclick="setNotesFilter('ga')" class="filter-chip px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors whitespace-nowrap">General Awareness</button>
+          <button data-filter="reasoning" onclick="setNotesFilter('reasoning')" class="filter-chip px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors whitespace-nowrap">Reasoning</button>
+        </div>
+      </div>
+      <!-- Bento grid -->
+      <div class="max-w-[1440px] mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left column: topic intelligence cards -->
+          <div class="lg:col-span-8 flex flex-col gap-6" id="notesTopicsList"></div>
+          <!-- Right column: mission critical + drafting station -->
+          <div class="lg:col-span-4 flex flex-col gap-6">
+            <aside class="bento-card p-6">
+              <header class="flex items-center gap-2 border-b border-outline-variant pb-3 mb-4">
+                <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1">warning</span>
+                <span class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Mission Critical</span>
+              </header>
+              <div class="space-y-3" id="missionCriticalSidebar"></div>
+            </aside>
+            <aside class="bento-card flex flex-col h-full min-h-[280px]">
+              <header class="flex items-center justify-between border-b border-outline-variant p-4 bg-surface-container-low rounded-t-lg">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary">edit_note</span>
+                  <span class="text-[10px] uppercase tracking-widest font-bold text-primary">Drafting Station</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-widest text-on-surface-variant">Quick Add</span>
+              </header>
+              <div class="flex-1 p-4 flex flex-col gap-2">
+                <input id="draftTitle" type="text" placeholder="Note title (e.g. Current Affairs Q3)" class="w-full bg-transparent border-0 border-b border-outline-variant pb-2 text-sm font-bold text-primary placeholder-outline outline-none focus:border-secondary">
+                <select id="draftSubject" class="w-full bg-surface-container-low border border-outline-variant rounded text-xs px-2 py-1.5 focus:border-secondary focus:outline-none">
+                  <option value="english">English</option>
+                  <option value="math">Mathematics</option>
+                  <option value="ga">General Awareness</option>
+                  <option value="reasoning">Reasoning</option>
+                </select>
+                <textarea id="draftBody" placeholder="Input tactical data here..." class="w-full flex-1 bg-transparent border-0 resize-none focus:ring-0 text-sm text-on-surface placeholder-on-surface-variant outline-none" style="min-height: 100px;"></textarea>
+              </div>
+              <div class="p-3 border-t border-outline-variant flex justify-end gap-2 bg-surface-container-lowest rounded-b-lg">
+                <button onclick="clearDraft()" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:bg-surface-container rounded transition-colors">Discard</button>
+                <button onclick="saveDraft()" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-secondary text-on-secondary rounded hover:opacity-90 transition-opacity flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">save</span> Save Intel
+                </button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="topicView" class="hidden">
@@ -719,76 +774,137 @@ function getProgressStats() {
   return stats;
 }
 
-// ===== NOTES HOME =====
-function renderNotesHome(filter = '') {
-  const lower = filter.toLowerCase();
-  const subjects = [
-    { key: 'english', label: 'Verbal Ability', icon: 'menu_book' },
-    { key: 'math', label: 'Numerical Ability', icon: 'calculate' },
-    { key: 'ga', label: 'General Awareness', icon: 'public' },
-    { key: 'reasoning', label: 'Reasoning & Military Aptitude', icon: 'psychology' }
-  ];
-  const papers = getPapers();
-  const html = subjects.map(subj => {
-    const topics = Object.keys(topicsData[subj.key] || {}).filter(t => !filter || t.toLowerCase().includes(lower));
-    if (!topics.length) return '';
-    return `
-      <section>
-        <header class="flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
-          <span class="material-symbols-outlined text-secondary text-[18px]">${subj.icon}</span>
-          <h2 class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">${subj.label}</h2>
-        </header>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${topics.map(t => {
-            const data = topicsData[subj.key][t];
-            return `
-              <article class="topic-card bento-card p-4 flex flex-col" onclick="openTopic('${subj.key}', '${t.replace(/'/g, "\\'")}')">
-                <div class="h-16 -mx-4 -mt-4 mb-3 rounded-t" style="background: ${data.cover}"></div>
-                <div class="text-3xl mb-2">${data.icon}</div>
-                <h3 class="font-bold text-primary text-sm mb-1">${t}</h3>
-                <p class="text-[10px] uppercase tracking-widest text-on-surface-variant">${data.blocks.length} blocks · ${capitalize(subj.key)}</p>
-              </article>
-            `;
-          }).join('')}
-        </div>
-      </section>
-    `;
-  }).join('');
+// ===== NOTES HOME (Tactical Notes Dossier layout) =====
+let notesFilter = 'all';
 
-  // Past papers section
-  const papersHtml = `
-    <section>
-      <header class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-secondary text-[18px]">description</span>
-          <h2 class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Past Papers & Intel Sources</h2>
-        </div>
-        <div class="flex gap-2">
-          <button class="text-[10px] uppercase tracking-widest font-bold text-secondary hover:underline" onclick="addPaperFromURL()">+ From URL</button>
-          <button class="text-[10px] uppercase tracking-widest font-bold text-secondary hover:underline" onclick="addPaperFromPaste()">+ Paste</button>
-        </div>
-      </header>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        ${papers.length ? papers.map(p => `
-          <div class="bento-card p-3 hover:border-secondary cursor-pointer group" onclick="startPaperPractice('${p.id}')">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="font-bold text-sm text-primary">📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
-                <div class="text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">${p.questions.length} Qs · ${safeHostname(p.source)}</div>
-              </div>
-              <button class="opacity-0 group-hover:opacity-100 text-error text-xs" onclick="event.stopPropagation(); deletePaper('${p.id}')" title="Delete">
-                <span class="material-symbols-outlined text-[18px]">delete</span>
-              </button>
-            </div>
-          </div>
-        `).join('') : '<p class="text-sm text-on-surface-variant col-span-full">No papers yet. Click "+ From URL" or "+ Paste" to add real AFCAT papers.</p>'}
-      </div>
-    </section>
-  `;
-  document.getElementById('notesHomeContent').innerHTML = html + papersHtml;
+function setNotesFilter(f) {
+  notesFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    if (c.dataset.filter === f) {
+      c.className = 'filter-chip px-4 py-2 bg-primary text-on-primary rounded text-[10px] font-bold uppercase tracking-widest border border-primary hover:bg-primary-container transition-colors shadow-sm whitespace-nowrap';
+    } else {
+      c.className = 'filter-chip px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors whitespace-nowrap';
+    }
+  });
+  renderNotesHome();
 }
 
+function renderNotesHome(search = '') {
+  const lower = search.toLowerCase();
+  const subjects = [
+    { key: 'english', label: 'English', tag: 'ENG', icon: 'menu_book', color: 'bg-tertiary-fixed text-on-tertiary-fixed' },
+    { key: 'math', label: 'Mathematics', tag: 'MATH', icon: 'calculate', color: 'bg-primary-fixed text-on-primary-fixed' },
+    { key: 'ga', label: 'General Awareness', tag: 'GA', icon: 'public', color: 'bg-secondary-container text-on-secondary-container' },
+    { key: 'reasoning', label: 'Reasoning', tag: 'REASON', icon: 'psychology', color: 'bg-surface-container-high text-on-surface' }
+  ];
+  const visibleSubjects = notesFilter === 'all' ? subjects : subjects.filter(s => s.key === notesFilter);
+
+  // Mission Critical sidebar
+  document.getElementById('missionCriticalSidebar').innerHTML = MISSION_CRITICAL.map(f => `
+    <div class="p-3 border-l-2 border-secondary bg-surface-container-low hover:bg-surface-container transition-colors rounded-r">
+      <p class="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">${f.cat}</p>
+      <p class="text-sm font-semibold text-on-surface">${f.fact}</p>
+    </div>
+  `).join('');
+
+  // Topic intelligence cards (left column)
+  const topicsList = document.getElementById('notesTopicsList');
+  let html = '';
+  for (const subj of visibleSubjects) {
+    const topics = Object.keys(topicsData[subj.key] || {});
+    for (const topicName of topics) {
+      if (search && !topicName.toLowerCase().includes(lower)) continue;
+      const data = topicsData[subj.key][topicName];
+      if (!data) continue;
+      // Extract a preview from the blocks
+      const preview = extractPreview(data.blocks);
+      html += `
+        <article class="bento-card flex flex-col cursor-pointer hover:border-secondary transition-colors" onclick="openTopic('${subj.key}', '${escapeAttr(topicName)}')">
+          <header class="flex items-center justify-between border-b border-outline-variant pb-3 mb-4 px-6 pt-6">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1">book</span>
+              <span class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Subject Intelligence</span>
+            </div>
+            <span class="${subj.color} px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${subj.tag} — ${escapeHtml(topicName.toUpperCase().slice(0, 18))}</span>
+          </header>
+          <div class="px-6 pb-6 flex-1 flex flex-col">
+            <h3 class="text-lg md:text-xl font-bold text-primary mb-3">${escapeHtml(topicName)}</h3>
+            <div class="prose prose-sm text-on-surface max-w-none text-sm flex-1">
+              ${preview}
+            </div>
+            <button class="self-start mt-4 text-[10px] font-bold uppercase tracking-widest text-secondary hover:underline flex items-center gap-1">
+              Read full dossier <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+      `;
+    }
+  }
+  if (!html) {
+    html = '<div class="bento-card p-12 text-center text-on-surface-variant">No topics match this filter. Try "All Intel".</div>';
+  }
+  topicsList.innerHTML = html;
+}
+
+function extractPreview(blocks) {
+  // Take first 3 non-empty blocks (h1, h2, p, callout) and render a short preview
+  const skipTypes = ['divider'];
+  const picked = [];
+  for (const b of blocks) {
+    if (skipTypes.includes(b.type)) continue;
+    if (!b.content) continue;
+    picked.push(b);
+    if (picked.length >= 3) break;
+  }
+  if (!picked.length) return '<p class="text-on-surface-variant italic">Empty topic — click to add content.</p>';
+  return picked.map(b => {
+    const c = escapeHtml(b.content);
+    if (b.type === 'h1') return `<h4 class="text-base font-bold text-primary mb-2">${c}</h4>`;
+    if (b.type === 'h2') return `<h4 class="text-sm font-bold text-primary mb-1">${c}</h4>`;
+    if (b.type === 'h3') return `<h5 class="text-xs font-bold text-primary mb-1">${c}</h5>`;
+    if (b.type === 'callout') return `<div class="bg-surface-container-low border-l-2 border-secondary pl-3 py-2 text-xs text-on-surface mb-2 rounded-r"><strong>${b.icon || '💡'}</strong> ${c}</div>`;
+    if (b.type === 'todo') return `<div class="text-xs text-on-surface mb-1">☐ ${c}</div>`;
+    if (b.type === 'quote') return `<div class="text-xs italic text-on-surface-variant border-l-2 border-outline pl-3 mb-2">${c}</div>`;
+    if (b.type === 'code') return `<pre class="bg-primary-container text-on-primary p-2 rounded text-xs font-mono mb-2 overflow-x-auto">${c}</pre>`;
+    return `<p class="text-sm text-on-surface mb-2">${c}</p>`;
+  }).join('');
+}
+
+function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+function escapeAttr(s) { return String(s || '').replace(/'/g, "\\'"); }
+
 function filterNotes(q) { renderNotesHome(q); }
+
+function saveDraft() {
+  const title = document.getElementById('draftTitle').value.trim();
+  const subject = document.getElementById('draftSubject').value;
+  const body = document.getElementById('draftBody').value.trim();
+  if (!title) { toast('Add a title first', 'warning'); return; }
+  if (!body) { toast('Add some content first', 'warning'); return; }
+  if (!topicsData[subject]) topicsData[subject] = {};
+  if (topicsData[subject][title]) {
+    topicsData[subject][title].blocks.push({ type: 'p', content: body });
+  } else {
+    topicsData[subject][title] = {
+      icon: '📝',
+      cover: 'linear-gradient(135deg, #775a19 0%, #041632 100%)',
+      blocks: [
+        { type: 'h1', content: title },
+        { type: 'callout', icon: '🆕', content: 'Captured from Drafting Station' },
+        { type: 'p', content: body }
+      ]
+    };
+  }
+  saveToStorage();
+  clearDraft();
+  renderNotesHome();
+  toast(`Saved "${title}" to ${capitalize(subject)}`, 'success');
+}
+
+function clearDraft() {
+  document.getElementById('draftTitle').value = '';
+  document.getElementById('draftBody').value = '';
+}
 
 function resetNotes() {
   if (!confirm('Reset all notes to defaults? Your saved changes will be lost.')) return;
