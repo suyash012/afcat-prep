@@ -171,10 +171,10 @@ tailwind.config = {
       </div>
     </div>
     <ul class="hidden md:flex gap-6 items-center h-full">
-      <li class="text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer" onclick="showView('brief')">Brief</li>
-      <li class="text-xs uppercase tracking-widest text-secondary-container border-b-2 border-secondary pb-1 font-bold" onclick="showView('notes')">Notes</li>
-      <li class="text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer" onclick="showView('engagement')">Engage</li>
-      <li class="text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer" onclick="showView('intel')">Intel</li>
+      <li class="topnav-item text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer py-5" data-topnav="brief" onclick="showView('brief')">Brief</li>
+      <li class="topnav-item text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer py-5" data-topnav="notes" onclick="showView('notes')">Notes</li>
+      <li class="topnav-item text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer py-5" data-topnav="engagement" onclick="showView('engagement')">Engage</li>
+      <li class="topnav-item text-xs uppercase tracking-widest text-on-primary-container hover:text-secondary-container cursor-pointer py-5" data-topnav="intel" onclick="showView('intel')">Intel</li>
     </ul>
     <div class="flex items-center gap-2">
       <button class="p-2 hover:bg-primary-container rounded-full" onclick="openSettings()" title="Settings">
@@ -302,13 +302,21 @@ tailwind.config = {
             <div class="relative z-10">
               <h2 class="text-xl font-bold mb-2">Engage Now</h2>
               <p class="text-sm text-on-primary/70 mb-4">Initialize a tactical engagement — 100 questions, 120 minutes.</p>
+              <div class="flex items-center gap-3 text-xs uppercase tracking-widest text-on-primary/60 mb-3">
+                <span><span class="text-secondary font-bold" id="topicCount">10</span> Notes</span>
+                <span>·</span>
+                <span><span class="text-secondary font-bold" id="paperCount">0</span> Papers</span>
+              </div>
             </div>
             <div class="relative z-10 flex gap-2">
               <button class="flex-1 bg-secondary text-on-secondary py-2.5 rounded text-xs font-bold uppercase tracking-widest hover:opacity-90 flex items-center justify-center gap-1" onclick="openPractice()">
-                <span class="material-symbols-outlined text-[16px]">play_arrow</span> Start
+                <span class="material-symbols-outlined text-[16px]">play_arrow</span> Engage
               </button>
-              <button class="flex-1 border border-on-primary/30 text-on-primary py-2.5 rounded text-xs font-bold uppercase tracking-widest hover:bg-primary-container" onclick="showView('intel')">
-                Intel
+              <button class="flex-1 border border-on-primary/30 text-on-primary py-2.5 rounded text-xs font-bold uppercase tracking-widest hover:bg-primary-container flex items-center justify-center gap-1" onclick="showView('notes')">
+                <span class="material-symbols-outlined text-[16px]">menu_book</span> Notes
+              </button>
+              <button class="flex-1 border border-on-primary/30 text-on-primary py-2.5 rounded text-xs font-bold uppercase tracking-widest hover:bg-primary-container flex items-center justify-center gap-1" onclick="showView('intel')">
+                <span class="material-symbols-outlined text-[16px]">analytics</span> Intel
               </button>
             </div>
           </aside>
@@ -330,6 +338,7 @@ tailwind.config = {
               <input id="notesSearch" type="text" placeholder="Search intel..." oninput="filterNotes(this.value)" class="w-full bg-surface-container-low border border-outline-variant text-sm pl-8 pr-3 py-1.5 rounded focus:outline-none focus:border-secondary">
             </div>
             <button class="px-3 py-1.5 bg-primary text-on-primary text-xs font-bold uppercase tracking-widest rounded hover:opacity-90 whitespace-nowrap" onclick="aiAssist()">✨ AI Assist</button>
+            <button class="px-3 py-1.5 border border-outline-variant text-on-surface-variant text-xs font-bold uppercase tracking-widest rounded hover:bg-surface-container whitespace-nowrap" onclick="resetNotes()" title="Reset to default topics">↺ Reset</button>
           </div>
         </div>
       </header>
@@ -599,22 +608,30 @@ function showView(view) {
   allViews.forEach(v => { const el = document.getElementById(v); if (el) el.classList.add('hidden'); });
 
   document.querySelectorAll('.nav-item[data-nav]').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.topnav-item').forEach(el => {
+    el.classList.remove('text-secondary-container', 'border-b-2', 'border-secondary', 'pb-1', 'font-bold');
+  });
+  document.querySelectorAll('.topnav-item').forEach(el => el.classList.add('text-on-primary-container'));
 
   if (view === 'brief') {
     document.getElementById('briefView').classList.remove('hidden');
     document.querySelector('.nav-item[data-nav="brief"]')?.classList.add('active');
+    document.querySelector('.topnav-item[data-topnav="brief"]')?.classList.add('text-secondary-container', 'border-b-2', 'border-secondary', 'pb-1', 'font-bold');
     renderBrief();
   } else if (view === 'notes') {
     document.getElementById('notesHomeView').classList.remove('hidden');
     document.querySelector('.nav-item[data-nav="notes"]')?.classList.add('active');
+    document.querySelector('.topnav-item[data-topnav="notes"]')?.classList.add('text-secondary-container', 'border-b-2', 'border-secondary', 'pb-1', 'font-bold');
     renderNotesHome();
   } else if (view === 'engagement') {
     document.getElementById('engagementView').classList.remove('hidden');
     document.querySelector('.nav-item[data-nav="engagement"]')?.classList.add('active');
+    document.querySelector('.topnav-item[data-topnav="engagement"]')?.classList.add('text-secondary-container', 'border-b-2', 'border-secondary', 'pb-1', 'font-bold');
     openPractice();
   } else if (view === 'intel') {
     document.getElementById('intelView').classList.remove('hidden');
     document.querySelector('.nav-item[data-nav="intel"]')?.classList.add('active');
+    document.querySelector('.topnav-item[data-topnav="intel"]')?.classList.add('text-secondary-container', 'border-b-2', 'border-secondary', 'pb-1', 'font-bold');
     renderIntel();
   }
   // close mobile sidebar
@@ -664,6 +681,10 @@ function renderBrief() {
 
   // Recent intel
   const papers = getPapers();
+  const tc = document.getElementById('topicCount');
+  const pc = document.getElementById('paperCount');
+  if (tc) tc.textContent = getTopicCount();
+  if (pc) pc.textContent = papers.length;
   const recent = papers.slice(0, 4);
   document.getElementById('recentIntel').innerHTML = recent.length ? recent.map(p => `
     <div class="p-3 bg-surface-container-low rounded cursor-pointer hover:bg-surface-container transition-colors" onclick="startPaperPractice('${p.id}')">
@@ -768,6 +789,18 @@ function renderNotesHome(filter = '') {
 }
 
 function filterNotes(q) { renderNotesHome(q); }
+
+function resetNotes() {
+  if (!confirm('Reset all notes to defaults? Your saved changes will be lost.')) return;
+  localStorage.removeItem('afcat-topics');
+  location.reload();
+}
+
+function getTopicCount() {
+  let count = 0;
+  for (const subj in topicsData) count += Object.keys(topicsData[subj] || {}).length;
+  return count;
+}
 
 // ===== TOPIC VIEW (block editor) =====
 function openTopic(subject, topicName) {
@@ -905,7 +938,21 @@ function autoSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveTo
 function loadFromStorage() {
   try {
     const saved = localStorage.getItem('afcat-topics');
-    if (saved) { const parsed = JSON.parse(saved); Object.assign(topicsData, parsed); }
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Smart merge: only update blocks of topics that exist in BOTH, preserve inline topics if missing
+      for (const subj in parsed) {
+        if (topicsData[subj]) {
+          for (const topic in parsed[subj]) {
+            if (topicsData[subj][topic] && Array.isArray(parsed[subj][topic].blocks)) {
+              topicsData[subj][topic].blocks = parsed[subj][topic].blocks;
+              if (parsed[subj][topic].cover) topicsData[subj][topic].cover = parsed[subj][topic].cover;
+              if (parsed[subj][topic].icon) topicsData[subj][topic].icon = parsed[subj][topic].icon;
+            }
+          }
+        }
+      }
+    }
   } catch (e) { console.error(e); }
 }
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
