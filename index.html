@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFCAT Notes — Notion Style</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: #ffffff;
+    color: #37352f;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #ebebeb;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+  }
+  .topbar .breadcrumb {
+    font-size: 13px;
+    color: #787774;
+    flex: 1;
+  }
+  .topbar .breadcrumb span { color: #37352f; font-weight: 500; }
+  .topbar button {
+    background: transparent;
+    border: 1px solid #ebebeb;
+    color: #37352f;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .topbar button:hover { background: #f7f6f3; }
+  .topbar button.primary {
+    background: #2383e2;
+    color: white;
+    border-color: #2383e2;
+  }
+  .topbar button.primary:hover { background: #1a6fc4; }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 44px; bottom: 0;
+    width: 260px;
+    background: #f7f6f3;
+    border-right: 1px solid #ebebeb;
+    padding: 14px 8px;
+    overflow-y: auto;
+    z-index: 50;
+  }
+  .sidebar h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #787774;
+    padding: 6px 12px;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar-item {
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #37352f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 1px 0;
+  }
+  .sidebar-item:hover { background: #ececeb; }
+  .sidebar-item.active { background: #e8e7e3; font-weight: 500; }
+  .sidebar-item .icon { font-size: 16px; }
+
+  /* Page */
+  .page {
+    margin-left: 260px;
+    padding: 0;
+    min-height: calc(100vh - 44px);
+  }
+
+  /* Cover */
+  .cover {
+    height: 200px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ffd93d 100%);
+    position: relative;
+  }
+  .cover-controls {
+    position: absolute;
+    bottom: 12px;
+    right: 20px;
+    display: flex;
+    gap: 6px;
+  }
+  .cover-controls button {
+    background: rgba(255,255,255,0.9);
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #37352f;
+  }
+  .cover-controls button:hover { background: white; }
+
+  /* Page header */
+  .page-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 60px 10px;
+  }
+  .page-icon {
+    font-size: 78px;
+    line-height: 1;
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .page-title {
+    font-size: 40px;
+    font-weight: 700;
+    color: #37352f;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 4px 0;
+    margin-bottom: 4px;
+    font-family: inherit;
+  }
+  .page-title::placeholder { color: #c4c4c4; }
+  .page-meta {
+    font-size: 13px;
+    color: #787774;
+    margin-top: 8px;
+  }
+
+  /* Content blocks */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 60px 200px;
+  }
+
+  .block {
+    position: relative;
+    padding: 3px 0;
+    margin: 1px 0;
+    border-radius: 3px;
+    transition: background 0.1s;
+  }
+  .block:hover { background: #f7f6f3; }
+  .block:hover .block-handle { opacity: 1; }
+  .block:hover .block-actions { opacity: 1; }
+
+  .block-handle {
+    position: absolute;
+    left: -40px;
+    top: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 0.1s;
+    color: #c4c4c4;
+    font-size: 14px;
+    user-select: none;
+  }
+  .block-handle:hover { color: #787774; }
+  .block-handle:active { cursor: grabbing; }
+
+  .block-actions {
+    position: absolute;
+    right: -100px;
+    top: 4px;
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .block-actions button {
+    background: transparent;
+    border: none;
+    padding: 4px 6px;
+    cursor: pointer;
+    color: #787774;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  .block-actions button:hover { background: #ececeb; color: #37352f; }
+
+  .block-content {
+    outline: none;
+    padding: 3px 2px;
+    min-height: 24px;
+    font-size: 16px;
+    line-height: 1.6;
+    word-wrap: break-word;
+  }
+  .block-content:empty::before {
+    content: attr(data-placeholder);
+    color: #c4c4c4;
+  }
+
+  /* Block types */
+  .block.h1 .block-content { font-size: 30px; font-weight: 700; line-height: 1.3; padding: 20px 0 4px; }
+  .block.h2 .block-content { font-size: 24px; font-weight: 600; line-height: 1.3; padding: 16px 0 4px; }
+  .block.h3 .block-content { font-size: 20px; font-weight: 600; line-height: 1.3; padding: 12px 0 4px; }
+  .block.todo .block-content { padding-left: 24px; position: relative; }
+  .block.todo::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 10px;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #c4c4c4;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .block.todo.done .block-content { text-decoration: line-through; color: #787774; }
+  .block.todo.done::before {
+    background: #2383e2;
+    border-color: #2383e2;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2' d='M3 8l3 3 7-7'/%3E%3C/svg%3E");
+    background-size: 12px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .block.callout {
+    padding: 16px 16px 16px 50px;
+    background: #f7f6f3;
+    border-radius: 4px;
+    border-left: 3px solid #2383e2;
+    margin: 8px 0;
+  }
+  .block.callout .block-icon {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    font-size: 20px;
+  }
+  .block.callout .block-content { font-size: 15px; }
+  .block.code {
+    background: #f7f6f3;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13px;
+    margin: 4px 0;
+  }
+  .block.code .block-content { font-family: inherit; font-size: inherit; }
+  .block.divider {
+    padding: 12px 0;
+    cursor: pointer;
+  }
+  .block.divider::before {
+    content: '';
+    display: block;
+    height: 1px;
+    background: #ebebeb;
+  }
+  .block.quote { border-left: 3px solid #37352f; padding-left: 16px; margin: 4px 0; }
+  .block.quote .block-content { font-style: italic; color: #4a4a4a; }
+
+  /* Add block button */
+  .add-block {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    margin: 4px 0;
+    color: #c4c4c4;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.1s;
+  }
+  .add-block:hover { background: #f7f6f3; color: #787774; }
+  .add-block-icon {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* Slash menu */
+  .slash-menu {
+    position: absolute;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    padding: 6px;
+    min-width: 280px;
+    z-index: 1000;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .slash-menu-item {
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .slash-menu-item:hover { background: #f7f6f3; }
+  .slash-menu-item .icon {
+    width: 32px; height: 32px;
+    background: #f7f6f3;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .slash-menu-item .desc { color: #787774; font-size: 12px; }
+
+  /* AI panel */
+  .ai-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border: 1px solid #ebebeb;
+    z-index: 200;
+  }
+  .ai-panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #ebebeb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .ai-panel-body {
+    padding: 12px 16px;
+  }
+  .ai-panel textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 1px solid #ebebeb;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+  }
+  .ai-panel textarea:focus { border-color: #2383e2; }
+  .ai-panel-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+  .ai-panel button {
+    background: #2383e2;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .ai-panel button:hover { background: #1a6fc4; }
+  .ai-panel button.secondary { background: #f7f6f3; color: #37352f; }
+  .ai-panel button.secondary:hover { background: #ececeb; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #787774;
+  }
+  .empty-state h2 { font-size: 24px; margin-bottom: 8px; color: #37352f; }
+
+  /* Topic grid (initial) */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 0 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .topic-card {
+    border: 1px solid #ebebeb;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: white;
+  }
+  .topic-card:hover {
+    border-color: #c4c4c4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .topic-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .topic-card .title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .topic-card .meta { font-size: 12px; color: #787774; }
+
+  /* Section headers */
+  .section-header {
+    max-width: 1200px;
+    margin: 30px auto 16px;
+    padding: 0 60px;
+    font-size: 13px;
+    color: #787774;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #d3d3d3; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #b3b3b3; }
+
+  /* KaTeX fix for contentEditable */
+  .katex { font-size: 1.1em; }
+  .katex-display { margin: 8px 0; }
+
+  /* Settings Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: white; border-radius: 8px;
+    width: 90%; max-width: 480px; padding: 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  }
+  .modal h2 { font-size: 20px; margin-bottom: 16px; }
+  .modal label { display: block; font-size: 13px; color: #787774; margin: 12px 0 4px; font-weight: 500; }
+  .modal input, .modal textarea, .modal select {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid #ebebeb; border-radius: 4px;
+    font-size: 14px; font-family: inherit;
+  }
+  .modal input:focus, .modal textarea:focus { outline: none; border-color: #2383e2; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .modal-actions button {
+    padding: 8px 14px; border-radius: 4px; font-size: 14px; cursor: pointer;
+    border: 1px solid #ebebeb; background: white; color: #37352f;
+  }
+  .modal-actions button.primary { background: #2383e2; color: white; border-color: #2383e2; }
+  .modal-actions button.primary:hover { background: #1a6fc4; }
+
+  /* Practice Mode */
+  .practice-container { max-width: 800px; margin: 0 auto; padding: 40px 60px; }
+  .practice-header { margin-bottom: 24px; }
+  .practice-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+  .practice-meta { font-size: 13px; color: #787774; }
+  .progress-bar {
+    height: 4px; background: #ebebeb; border-radius: 2px; overflow: hidden;
+    margin: 16px 0;
+  }
+  .progress-bar-fill { height: 100%; background: #2383e2; transition: width 0.3s; }
+  .question-card {
+    background: white; border: 1px solid #ebebeb; border-radius: 8px;
+    padding: 24px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .question-text { font-size: 16px; line-height: 1.6; margin-bottom: 16px; white-space: pre-wrap; }
+  .options-list { display: flex; flex-direction: column; gap: 8px; }
+  .option {
+    padding: 12px 16px; border: 1.5px solid #ebebeb; border-radius: 6px;
+    cursor: pointer; transition: all 0.15s; font-size: 15px;
+  }
+  .option:hover { border-color: #2383e2; background: #f7f9fc; }
+  .option.selected { border-color: #2383e2; background: #ebf3fc; }
+  .option.correct { border-color: #2ecc71; background: #e8f8f0; }
+  .option.wrong { border-color: #e74c3c; background: #fdf0ef; }
+  .explanation {
+    margin-top: 16px; padding: 16px; background: #f7f6f3;
+    border-radius: 6px; border-left: 3px solid #2383e2;
+    font-size: 14px; line-height: 1.6; white-space: pre-wrap;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .practice-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .practice-actions button {
+    padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;
+    border: 1px solid #ebebeb; background: white; color: #37352f;
+  }
+  .practice-actions button.primary { background: #2383e2; color: white; border-color: #2383e2; }
+  .practice-actions button.primary:hover { background: #1a6fc4; }
+
+  .timer { font-size: 13px; color: #787774; }
+  .timer.warn { color: #e74c3c; font-weight: 600; }
+
+  .source-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .source-picker button {
+    padding: 8px 14px; border: 1px solid #ebebeb; border-radius: 4px;
+    background: white; cursor: pointer; font-size: 13px;
+  }
+  .source-picker button.active { background: #2383e2; color: white; border-color: #2383e2; }
+
+  .score-summary {
+    text-align: center; padding: 40px 20px;
+  }
+  .score-big { font-size: 64px; font-weight: 700; color: #2383e2; }
+  .score-label { font-size: 16px; color: #787774; margin-bottom: 24px; }
+
+  .workflow-step {
+    padding: 16px; border-left: 3px solid #2383e2; background: #f7f6f3;
+    margin: 12px 0; border-radius: 0 6px 6px 0;
+  }
+  .workflow-step h4 { font-size: 15px; margin-bottom: 6px; }
+  .workflow-step p { font-size: 13px; color: #4a4a4a; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="breadcrumb">📚 AFCAT Notes › <span id="currentSubject">All Topics</span> › <span id="currentTopic"></span></div>
+  <button onclick="showHome()">🏠 Home</button>
+  <button onclick="openPractice()">📝 Practice</button>
+  <button onclick="exportContent()">💾 Export</button>
+  <button onclick="openSettings()">⚙️</button>
+  <button class="primary" onclick="addNewPage()">+ New</button>
+</div>
+
+<div class="sidebar">
+  <h3>Favorites</h3>
+  <div class="sidebar-item" onclick="showHome()"><span class="icon">🏠</span> Home</div>
+  <div class="sidebar-item"><span class="icon">⭐</span> Bookmarks</div>
+
+  <h3>📖 English</h3>
+  <div class="sidebar-item" onclick="openTopic('english', 'Synonyms & Antonyms')"><span class="icon">📚</span> Synonyms & Antonyms</div>
+  <div class="sidebar-item" onclick="openTopic('english', 'Tenses')"><span class="icon">⏰</span> Tenses</div>
+  <div class="sidebar-item" onclick="openTopic('english', 'Reading Comprehension')"><span class="icon">📖</span> Reading Comprehension</div>
+
+  <h3>🔢 Mathematics</h3>
+  <div class="sidebar-item" onclick="openTopic('math', 'Percentages')"><span class="icon">📊</span> Percentages</div>
+  <div class="sidebar-item" onclick="openTopic('math', 'Time & Work')"><span class="icon">⚙️</span> Time & Work</div>
+  <div class="sidebar-item" onclick="openTopic('math', 'Profit & Loss')"><span class="icon">💰</span> Profit & Loss</div>
+
+  <h3>🌍 General Awareness</h3>
+  <div class="sidebar-item" onclick="openTopic('ga', 'Indian Constitution')"><span class="icon">🇮🇳</span> Indian Constitution</div>
+  <div class="sidebar-item" onclick="openTopic('ga', 'Indian Geography')"><span class="icon">🗺️</span> Indian Geography</div>
+
+  <h3>🧩 Reasoning</h3>
+  <div class="sidebar-item" onclick="openTopic('reasoning', 'Blood Relations')"><span class="icon">👨‍👩‍👧</span> Blood Relations</div>
+  <div class="sidebar-item" onclick="openTopic('reasoning', 'Series & Patterns')"><span class="icon">🔢</span> Series & Patterns</div>
+</div>
+
+<div class="page" id="page">
+  <!-- Home view -->
+  <div id="homeView">
+    <div class="cover">
+      <div class="cover-controls">
+        <button onclick="addNewPage()">+ Add a topic</button>
+        <button onclick="changeCover()">🎨 Change cover</button>
+      </div>
+    </div>
+    <div class="page-header">
+      <div class="page-icon" contenteditable="true">📚</div>
+      <input class="page-title" value="AFCAT One-Pager Notes" readonly>
+      <div class="page-meta">Your complete AFCAT study companion · 10 topics loaded</div>
+    </div>
+    <div class="content">
+      <div class="section-header">📖 English Topics</div>
+      <div class="topic-grid" id="englishGrid"></div>
+
+      <div class="section-header">🔢 Mathematics</div>
+      <div class="topic-grid" id="mathGrid"></div>
+
+      <div class="section-header">🌍 General Awareness</div>
+      <div class="topic-grid" id="gaGrid"></div>
+
+      <div class="section-header">🧩 Reasoning & Military Aptitude</div>
+      <div class="topic-grid" id="reasoningGrid"></div>
+    </div>
+  </div>
+
+  <!-- Topic view -->
+  <div id="topicView" style="display:none;">
+    <div class="cover" id="topicCover">
+      <div class="cover-controls">
+        <button onclick="addBlockBelow()">+ Add block</button>
+        <button onclick="aiAssist()">✨ Ask AI</button>
+      </div>
+    </div>
+    <div class="page-header">
+      <div class="page-icon" id="topicIcon" contenteditable="true">📚</div>
+      <input class="page-title" id="topicTitle" value="Topic" readonly>
+      <div class="page-meta" id="topicMeta">Subject · 0 blocks</div>
+    </div>
+    <div class="content" id="blocksContainer"></div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal">
+    <h2>⚙️ Settings</h2>
+    <label>Mistral API Key</label>
+    <input type="password" id="mistralKey" placeholder="Paste your Mistral API key here">
+    <p style="font-size:12px; color:#787774; margin-top:4px;">Stored only in your browser (localStorage). Get a key at <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a></p>
+    <label>Mistral Model</label>
+    <select id="mistralModel">
+      <option value="mistral-small-latest">mistral-small-latest (recommended)</option>
+      <option value="mistral-medium-latest">mistral-medium-latest</option>
+      <option value="open-mistral-7k">open-mistral-7k (faster, free tier)</option>
+    </select>
+    <div class="modal-actions">
+      <button onclick="closeSettings()">Cancel</button>
+      <button onclick="testMistral()">Test</button>
+      <button class="primary" onclick="saveSettings()">Save</button>
+    </div>
+    <div id="settingsStatus" style="margin-top:12px; font-size:13px;"></div>
+  </div>
+</div>
+
+<!-- Practice View -->
+<div id="practiceView" style="display:none;">
+  <div class="cover" style="height:160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="cover-controls">
+      <button onclick="showHome()">← Home</button>
+    </div>
+  </div>
+  <div class="practice-container" id="practiceContent">
+    <!-- Set by JS -->
+  </div>
+</div>
+
+<!-- AI Panel -->
+<div class="ai-panel" id="aiPanel" style="display:none;">
+  <div class="ai-panel-header">
+    <span>✨</span> <span>AI Assistant</span>
+    <button class="secondary" style="margin-left:auto; padding:2px 8px;" onclick="closeAiPanel()">✕</button>
+  </div>
+  <div class="ai-panel-body">
+    <textarea id="aiInput" placeholder="Ask AI to add content, examples, MCQs, or anything else..."></textarea>
+    <div class="ai-panel-actions">
+      <button class="secondary" onclick="closeAiPanel()">Cancel</button>
+      <button onclick="generateAI()">Generate</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Notion-style data store
+let currentState = { topic: null, blocks: [] };
+let activeBlock = null;
+let saveTimeout = null;
+
+// Topic data
+const topicsData = {
+  'english': {
+    'Synonyms & Antonyms': {
+      icon: '📚',
+      cover: 'linear-gradient(135deg, #ff6b9d 0%, #c44569 100%)',
+      blocks: [
+        { type: 'h1', content: 'Synonyms & Antonyms' },
+        { type: 'callout', icon: '💡', content: 'Synonyms = Words with similar meanings. Antonyms = Words with opposite meanings. Master these to boost your English score!' },
+        { type: 'h2', content: '📖 High-Frequency Words' },
+        { type: 'todo', content: 'Abundant (पर्याप्त) ↔ Scarce (कम). Syn: Plentiful, Ample' },
+        { type: 'todo', content: 'Benevolent (दयालु) ↔ Malevolent. Syn: Kind, Charitable' },
+        { type: 'todo', content: 'Candid (ईमानदार) ↔ Deceitful. Syn: Frank, Honest' },
+        { type: 'todo', content: 'Diligent (मेहनती) ↔ Lazy. Syn: Hardworking' },
+        { type: 'todo', content: 'Eloquent (वाक्पटु) ↔ Inarticulate. Syn: Fluent' },
+        { type: 'h2', content: '✨ Worked Examples' },
+        { type: 'p', content: 'Q: Synonym of VIVACIOUS? A: Lively, Spirited, Animated' },
+        { type: 'p', content: 'Q: Antonym of PRAGMATIC? A: Idealistic, Impractical' },
+        { type: 'p', content: 'Q: Synonym of METICULOUS? A: Careful, Precise, Thorough' },
+        { type: 'h2', content: '🧠 Practice MCQs' },
+        { type: 'code', content: 'Q1: Synonym of CANDID\nA) Secretive  B) Frank  C) Shy  D) Rude\n✅ Answer: B' },
+        { type: 'code', content: 'Q2: Antonym of OPTIMISTIC\nA) Hopeful  B) Positive  C) Pessimistic  D) Cheerful\n✅ Answer: C' },
+        { type: 'code', content: 'Q3: Synonym of EPHEMERAL\nA) Eternal  B) Brief  C) Ancient  D) Permanent\n✅ Answer: B' },
+        { type: 'h2', content: '🔗 Match the Pairs' },
+        { type: 'p', content: 'Fortify ↔ Weaken · Genuine ↔ Fake · Ancient ↔ Modern · Rigid ↔ Flexible' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🚀', content: 'Pro Tips: Read The Hindu editorial daily · Learn 10 new words/day · Use Anki flashcards · Learn Latin/Greek roots · Practice 20 words daily' },
+        { type: 'h3', content: '📊 Learning Chain' },
+        { type: 'p', content: 'Read → Note → Flashcard → Quiz → Review → Master → Use in writing' }
+      ]
+    },
+    'Tenses': {
+      icon: '⏰',
+      cover: 'linear-gradient(135deg, #0984e3 0%, #74b9ff 100%)',
+      blocks: [
+        { type: 'h1', content: 'Tenses — Master Guide' },
+        { type: 'callout', icon: '⏰', content: 'English has 12 tenses. 3 main times (Present, Past, Future) × 4 aspects (Simple, Continuous, Perfect, Perfect Continuous).' },
+        { type: 'h2', content: '3 Main Tenses' },
+        { type: 'h3', content: '🔵 Present Tense' },
+        { type: 'p', content: '1. Simple: I eat (habits, facts)\n2. Continuous: I am eating (now, temporary)\n3. Perfect: I have eaten (just finished)\n4. Perfect Cont: I have been eating (started past, still going)' },
+        { type: 'h3', content: '🟡 Past Tense' },
+        { type: 'p', content: '1. Simple: I ate (finished action)\n2. Continuous: I was eating (ongoing in past)\n3. Perfect: I had eaten (before another past)\n4. Perfect Cont: I had been eating (duration before past)' },
+        { type: 'h3', content: '🔴 Future Tense' },
+        { type: 'p', content: '1. Simple: I will eat\n2. Continuous: I will be eating\n3. Perfect: I will have eaten\n4. Perfect Cont: I will have been eating' },
+        { type: 'h2', content: '🧠 Practice MCQs' },
+        { type: 'code', content: 'Q1: She ___ to school daily.\nA) go  B) goes  C) going  D) went\n✅ Answer: B (present habit)' },
+        { type: 'code', content: 'Q2: I ___ for 2 hours.\nA) study  B) studied  C) have been studying\n✅ Answer: C' },
+        { type: 'code', content: 'Q3: They ___ when I called.\nA) eat  B) ate  C) were eating\n✅ Answer: C' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🚀', content: 'Pro Tips: Memorize all 12 forms · Use time markers (now/yesterday/tomorrow) · Watch for since/for · Practice daily examples · Read aloud for flow' }
+      ]
+    },
+    'Reading Comprehension': {
+      icon: '📖',
+      cover: 'linear-gradient(135deg, #e84393 0%, #fd79a8 100%)',
+      blocks: [
+        { type: 'h1', content: 'Reading Comprehension' },
+        { type: 'callout', icon: '🎯', content: 'RC is 20% of AFCAT English. Strategy: Read QUESTIONS first, then passage. 8 min per passage max.' },
+        { type: 'h2', content: '6 Question Types' },
+        { type: 'todo', content: 'Main Idea → Found in first & last line' },
+        { type: 'todo', content: 'Inference → Read between the lines' },
+        { type: 'todo', content: 'Vocabulary → Use context clues' },
+        { type: 'todo', content: 'Tone → Positive/Negative/Neutral' },
+        { type: 'todo', content: 'Detail → Scan for keywords' },
+        { type: 'todo', content: 'Author\'s Purpose → Inform/Persuade/Entertain' },
+        { type: 'h2', content: '✨ Example Passage' },
+        { type: 'quote', content: 'Climate change poses severe threats to global biodiversity. Rising temperatures force species to migrate, disrupting ecosystems. Scientists warn that immediate action is crucial.' },
+        { type: 'p', content: 'Q: Main idea? A: Urgent climate action needed' },
+        { type: 'p', content: 'Q: Tone? A: Warning/Serious' },
+        { type: 'h2', content: '🧠 Practice MCQ' },
+        { type: 'code', content: '"Education is the most powerful weapon to change the world." - Mandela\n\nQ: Author believes education:\nA) Is useless  B) Transforms society\nC) Is expensive  D) Is outdated\n✅ Answer: B' },
+        { type: 'divider' },
+        { type: 'callout', icon: '💪', content: 'Pro Tips: Practice 2 passages daily · Don\'t use outside knowledge · Eliminate extreme options · Look for: however, but, so · Main idea = first/last line' }
+      ]
+    }
+  },
+  'math': {
+    'Percentages': {
+      icon: '📊',
+      cover: 'linear-gradient(135deg, #ff6348 0%, #ff7f50 100%)',
+      blocks: [
+        { type: 'h1', content: 'Percentages — Complete Guide' },
+        { type: 'callout', icon: '💡', content: 'Percent = Per 100. x% = x/100. Master conversions and formulas for fast solving.' },
+        { type: 'h2', content: '🔢 Core Formulas' },
+        { type: 'code', content: 'Percent = Per 100\nx% = x/100\n\nIncrease: New = Old × (1 + %/100)\nDecrease: New = Old × (1 - %/100)\nProfit% = (Profit/CP) × 100' },
+        { type: 'h2', content: '🔢 Quick Conversions' },
+        { type: 'p', content: '1/2 = 50% · 1/3 = 33.33% · 1/4 = 25% · 1/5 = 20%' },
+        { type: 'p', content: '1/6 = 16.67% · 1/7 = 14.28% · 1/8 = 12.5% · 1/10 = 10%' },
+        { type: 'p', content: '2/3 = 66.67% · 3/4 = 75% · 2/5 = 40% · 3/5 = 60%' },
+        { type: 'h2', content: '✨ Worked Examples' },
+        { type: 'p', content: '1. 20% of 500 = 100' },
+        { type: 'p', content: '2. Increase 100 by 10% = 100 × 1.1 = 110' },
+        { type: 'p', content: '3. Decrease 200 by 25% = 200 × 0.75 = 150' },
+        { type: 'p', content: '4. 50 is what % of 200? (50/200) × 100 = 25%' },
+        { type: 'p', content: '5. Successive +10%, +20% = 10+20+(10×20/100) = 32%' },
+        { type: 'h2', content: '🧠 Practice MCQs' },
+        { type: 'code', content: 'Q1: Price ↑20%, consumption must ↓by? to keep expense same\nA) 20%  B) 16.67%  C) 25%  D) 10%\n✅ Answer: B (100/120 × 100)' },
+        { type: 'code', content: 'Q2: A\'s salary is 25% more than B. B is what % less than A?\nA) 25%  B) 20%  C) 30%  D) 15%\n✅ Answer: B' },
+        { type: 'code', content: 'Q3: Successive discounts of 10% and 20% equal single\nA) 28%  B) 30%  C) 25%  D) 32%\n✅ Answer: A' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🚀', content: 'Pro Tips: Memorize fractions→% · Use unitary method · Successive: a+b+(ab/100) · Practice 10 daily · Estimate before calculate' }
+      ]
+    },
+    'Time & Work': {
+      icon: '⚙️',
+      cover: 'linear-gradient(135deg, #0652dd 0%, #1e90ff 100%)',
+      blocks: [
+        { type: 'h1', content: 'Time & Work Problems' },
+        { type: 'callout', icon: '⚙️', content: 'Work = Time × Efficiency. LCM method is the fastest. Practice daily for speed.' },
+        { type: 'h2', content: 'Key Formulas' },
+        { type: 'code', content: 'Work = Time × Efficiency\nIf A does work in x days: A\'s 1 day work = 1/x\nTogether in 1 day: 1/A + 1/B\nLCM Method: Total work = LCM of days' },
+        { type: 'h2', content: '✨ Worked Example' },
+        { type: 'code', content: 'Q: A does work in 10 days, B in 15 days. Together in?\n\nLCM Method:\nTotal work = LCM(10,15) = 30\nA\'s efficiency = 30/10 = 3\nB\'s efficiency = 30/15 = 2\nTogether = 3+2 = 5/day\nTime = 30/5 = 6 days ✅' },
+        { type: 'h2', content: '🧠 Practice MCQ' },
+        { type: 'code', content: 'Q: A can do work in 12 days. After 4 days, B joins.\nBoth finish in 2 more days. B alone can do in?\n\nA) 8 days  B) 6 days  C) 4 days  D) 10 days\n✅ Answer: B' },
+        { type: 'divider' },
+        { type: 'callout', icon: '💪', content: 'Pro Tips: LCM method is fastest · Efficiency = Work/Time · More people = less time · Practice 10 daily · Draw work charts' }
+      ]
+    },
+    'Profit & Loss': {
+      icon: '💰',
+      cover: 'linear-gradient(135deg, #ee5a24 0%, #ff6348 100%)',
+      blocks: [
+        { type: 'h1', content: 'Profit & Loss' },
+        { type: 'callout', icon: '💰', content: 'CP = Cost Price, SP = Selling Price. Always calculate on CP, not SP.' },
+        { type: 'h2', content: 'Core Formulas' },
+        { type: 'code', content: 'Profit = SP - CP\nLoss = CP - SP\nProfit% = (Profit/CP) × 100\nLoss% = (Loss/CP) × 100\nSP = CP × (100±%)/100' },
+        { type: 'h2', content: '✨ Worked Examples' },
+        { type: 'p', content: '1. CP=500, SP=600 → Profit=100, Profit% = (100/500)×100 = 20%' },
+        { type: 'p', content: '2. CP=800, Loss=10% → SP = 800×0.9 = 720' },
+        { type: 'p', content: '3. SP=1200, Profit=20% → CP = 1200/1.2 = 1000' },
+        { type: 'h2', content: '🧠 Practice MCQ' },
+        { type: 'code', content: 'Q: Marks up 40%, gives 10% discount. Actual profit?\nA) 30%  B) 26%  C) 28%  D) 32%\n✅ Answer: B\n\nSolution: MP=140, SP=140×0.9=126\nProfit% = 26/100×100 = 26%' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🚀', content: 'Pro Tips: Always calc on CP · Discount on MP · Successive: a+b+(ab/100) · Practice daily' }
+      ]
+    }
+  },
+  'ga': {
+    'Indian Constitution': {
+      icon: '🇮🇳',
+      cover: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+      blocks: [
+        { type: 'h1', content: 'Indian Constitution' },
+        { type: 'callout', icon: '🇮🇳', content: 'Adopted: 26 Nov 1949 · Effective: 26 Jan 1950 · Father: Dr. B.R. Ambedkar · 448 Articles, 25 Parts, 12 Schedules' },
+        { type: 'h2', content: 'Important Parts' },
+        { type: 'todo', content: 'Part I: Union & Territory' },
+        { type: 'todo', content: 'Part III: Fundamental Rights' },
+        { type: 'todo', content: 'Part IV: DPSP (Directive Principles)' },
+        { type: 'todo', content: 'Part IVA: Fundamental Duties' },
+        { type: 'todo', content: 'Part V: Union Government' },
+        { type: 'todo', content: 'Part VI: State Government' },
+        { type: 'h2', content: 'Key Articles' },
+        { type: 'code', content: 'Art 14: Equality before law\nArt 19: 6 Freedoms\nArt 21: Right to Life\nArt 32: Constitutional Remedies\nArt 44: Uniform Civil Code\nArt 51A: Fundamental Duties\nArt 72: President\'s Pardon\nArt 280: Finance Commission' },
+        { type: 'h2', content: '12 Schedules' },
+        { type: 'p', content: '1st: States & UTs · 2nd: Salaries · 3rd: Oaths · 4th: Rajya Sabha seats' },
+        { type: 'p', content: '5th: Scheduled Areas · 6th: NE States · 7th: Union/State/Concurrent Lists' },
+        { type: 'p', content: '8th: 22 Languages · 9th: Land reforms · 10th: Anti-defection · 11th: Panchayats · 12th: Municipalities' },
+        { type: 'h2', content: '🧠 Practice MCQs' },
+        { type: 'code', content: 'Q1: Fundamental Rights in?\nA) Part II  B) Part III  C) Part IV  D) Part V\n✅ Answer: B' },
+        { type: 'code', content: 'Q2: Right to Equality covers?\nA) Art 12-18  B) Art 14-18  C) Art 19-22\n✅ Answer: B' },
+        { type: 'code', content: 'Q3: DPSP borrowed from?\nA) USA  B) UK  C) Ireland  D) France\n✅ Answer: C' },
+        { type: 'divider' },
+        { type: 'callout', icon: '📚', content: 'Study Tips: Memorize key articles · Understand amendments · Know borrowed features · Practice MCQs daily · Read NCERT Class 11' }
+      ]
+    },
+    'Indian Geography': {
+      icon: '🗺️',
+      cover: 'linear-gradient(135deg, #2ed573 0%, #7bed9f 100%)',
+      blocks: [
+        { type: 'h1', content: 'Indian Geography' },
+        { type: 'callout', icon: '🗺️', content: 'Location: 8°4\'N to 37°6\'N · 72°E to 97°25\'E · Area: 3.28M km² (7th largest) · Coastline: 7516 km · 28 States, 8 UTs' },
+        { type: 'h2', content: 'Physical Divisions' },
+        { type: 'h3', content: '🏔️ Himalayas (North)' },
+        { type: 'p', content: 'Highest: Kanchenjunga · 3 parallel ranges · Young fold mountains' },
+        { type: 'h3', content: '🌾 Indo-Gangetic Plains' },
+        { type: 'p', content: 'Alluvial soil · Most fertile region · Densely populated' },
+        { type: 'h3', content: '⛰️ Deccan Plateau' },
+        { type: 'p', content: 'Oldest landmass · Rich in minerals · Black soil' },
+        { type: 'h3', content: '🏖️ Coastal Plains & Islands' },
+        { type: 'p', content: 'A&N (Bay of Bengal) · Lakshadweep (Arabian Sea)' },
+        { type: 'h2', content: 'Important Rivers' },
+        { type: 'p', content: 'Longest: Ganga (2525 km) · Source: Gangotri Glacier' },
+        { type: 'p', content: 'Godavari: Dakshin Ganga · Krishna: 2nd largest south · Narmada: Flows west' },
+        { type: 'h2', content: '🧠 Practice MCQs' },
+        { type: 'code', content: 'Q1: Tropic of Cancer passes through how many states?\nA) 6  B) 7  C) 8  D) 9\n✅ Answer: C' },
+        { type: 'code', content: 'Q2: Highest peak in India?\nA) Nanda Devi  B) Kanchenjunga  C) Nanga Parbat\n✅ Answer: B' },
+        { type: 'code', content: 'Q3: Longest river in South?\nA) Krishna  B) Cauvery  C) Godavari  D) Mahanadi\n✅ Answer: C' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🗺️', content: 'Study Tips: Draw maps · Memorize rivers & peaks · Know climate zones · Understand monsoons · Practice MCQs · Link to current events' }
+      ]
+    }
+  },
+  'reasoning': {
+    'Blood Relations': {
+      icon: '👨‍👩‍👧‍👦',
+      cover: 'linear-gradient(135deg, #fc5c65 0%, #fd79a8 100%)',
+      blocks: [
+        { type: 'h1', content: 'Blood Relations' },
+        { type: 'callout', icon: '👨‍👩‍👧‍👦', content: 'Family tree method. Male = □, Female = ○. Always start from speaker. Break into small parts.' },
+        { type: 'h2', content: 'Key Relations' },
+        { type: 'p', content: 'Father\'s father = Grandfather' },
+        { type: 'p', content: 'Mother\'s mother = Grandmother' },
+        { type: 'p', content: 'Father\'s brother = Uncle (Chacha)' },
+        { type: 'p', content: 'Mother\'s sister = Aunt (Mausi)' },
+        { type: 'p', content: 'Uncle\'s son = Cousin' },
+        { type: 'p', content: 'Wife\'s brother = Brother-in-law' },
+        { type: 'p', content: 'Son\'s wife = Daughter-in-law' },
+        { type: 'p', content: 'Daughter\'s husband = Son-in-law' },
+        { type: 'p', content: 'Brother\'s son = Nephew' },
+        { type: 'p', content: 'Sister\'s daughter = Niece' },
+        { type: 'h2', content: '✨ Worked Example' },
+        { type: 'code', content: 'Q: Pointing to a man, a woman said\n"He is my mother\'s only son\'s son."\nHow is man related to woman?\n\nSolution:\nWoman\'s mother\'s only son = Brother\nBrother\'s son = Nephew\n\n✅ Answer: NEPHEW' },
+        { type: 'h2', content: '🧠 Practice MCQ' },
+        { type: 'code', content: 'Q: A is B\'s brother. C is A\'s mother.\nD is C\'s father. E is B\'s son.\nHow is D related to E?\n\nA) Grandfather  B) Great-grandfather\nC) Grandmother  D) Uncle\n\nE → B → A → C → D\n✅ Answer: B (Great-grandfather)' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🚀', content: 'Pro Tips: Always start from speaker · Draw family tree · Use symbols consistently · Break into small parts · Practice 5 daily' }
+      ]
+    },
+    'Series & Patterns': {
+      icon: '🔢',
+      cover: 'linear-gradient(135deg, #4b7bec 0%, #a55eea 100%)',
+      blocks: [
+        { type: 'h1', content: 'Number & Letter Series' },
+        { type: 'callout', icon: '🔢', content: 'Check differences first, then ratios. Look for alternating patterns. Practice 10 daily.' },
+        { type: 'h2', content: 'Pattern Types' },
+        { type: 'todo', content: 'Arithmetic: +2, -3, ×2' },
+        { type: 'todo', content: 'Geometric: ×2, ×3, ÷2' },
+        { type: 'todo', content: 'Square/Cube: 1, 4, 9, 16' },
+        { type: 'todo', content: 'Alternating: +2, +3, +4' },
+        { type: 'todo', content: 'Fibonacci: 1, 1, 2, 3, 5' },
+        { type: 'todo', content: 'Letter: A, C, E (+2)' },
+        { type: 'h2', content: '✨ Examples' },
+        { type: 'p', content: '2, 4, 8, 16, ? (×2) → 32' },
+        { type: 'p', content: '1, 4, 9, 16, ? (squares) → 25' },
+        { type: 'p', content: 'A, C, E, G, ? (+2) → I' },
+        { type: 'p', content: '1, 3, 6, 10, ? (+2,+3,+4) → 15' },
+        { type: 'p', content: '3, 6, 11, 18, ? (+3,+5,+7,+9) → 27' },
+        { type: 'p', content: '2, 6, 12, 20, ? (n²+n) → 30' },
+        { type: 'h2', content: '🧠 Practice MCQs' },
+        { type: 'code', content: 'Q1: 3, 6, 11, 18, ?\nA) 25  B) 27  C) 29  D) 31\n✅ Answer: B (differences: 3,5,7,9)' },
+        { type: 'code', content: 'Q2: A, D, G, J, ?\nA) L  B) M  C) N  D) O\n✅ Answer: B (+3 each)' },
+        { type: 'code', content: 'Q3: 1, 4, 27, 256, ?\nA) 625  B) 3125  C) 1024  D) 512\n✅ Answer: B (n^n)' },
+        { type: 'divider' },
+        { type: 'callout', icon: '🚀', content: 'Pro Tips: Check differences first · Then check ratios · Look for alternating · Try squares/cubes · Practice 10 daily' }
+      ]
+    }
+  }
+};
+
+// Render home view
+function renderHome() {
+  document.getElementById('homeView').style.display = 'block';
+  document.getElementById('topicView').style.display = 'none';
+  document.getElementById('currentSubject').textContent = 'All Topics';
+  document.getElementById('currentTopic').textContent = '';
+
+  // Render topic grids
+  for (const subject of ['english', 'math', 'ga', 'reasoning']) {
+    const grid = document.getElementById(subject + 'Grid');
+    grid.innerHTML = '';
+    for (const topic in topicsData[subject]) {
+      const data = topicsData[subject][topic];
+      const card = document.createElement('div');
+      card.className = 'topic-card';
+      card.onclick = () => openTopic(subject, topic);
+      card.innerHTML = `
+        <div class="icon">${data.icon}</div>
+        <div class="title">${topic}</div>
+        <div class="meta">${data.blocks.length} blocks</div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+}
+
+// Open topic
+function openTopic(subject, topicName) {
+  const data = topicsData[subject][topicName];
+  if (!data) return;
+
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('topicView').style.display = 'block';
+  document.getElementById('currentSubject').textContent = capitalize(subject);
+  document.getElementById('currentTopic').textContent = topicName;
+  document.getElementById('topicIcon').textContent = data.icon;
+  document.getElementById('topicTitle').value = topicName;
+  document.getElementById('topicCover').style.background = data.cover;
+  document.getElementById('topicMeta').textContent = `${capitalize(subject)} · ${data.blocks.length} blocks`;
+
+  // Update active sidebar
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+
+  currentState.topic = `${subject}::${topicName}`;
+  currentState.blocks = JSON.parse(JSON.stringify(data.blocks));
+
+  renderBlocks();
+  saveToStorage();
+}
+
+// Render blocks
+function renderBlocks() {
+  const container = document.getElementById('blocksContainer');
+  container.innerHTML = '';
+
+  currentState.blocks.forEach((block, index) => {
+    const blockEl = createBlockElement(block, index);
+    container.appendChild(blockEl);
+  });
+
+  // Add trailing add block
+  const addBlock = document.createElement('div');
+  addBlock.className = 'add-block';
+  addBlock.onclick = () => addBlockAt(currentState.blocks.length);
+  addBlock.innerHTML = '<span class="add-block-icon">+</span> Click to add a block, or type / for commands';
+  container.appendChild(addBlock);
+}
+
+// Create block element
+function createBlockElement(block, index) {
+  const div = document.createElement('div');
+  div.className = 'block ' + block.type;
+  div.dataset.index = index;
+
+  // Handle icon for callout
+  if (block.type === 'callout' && block.icon) {
+    const icon = document.createElement('span');
+    icon.className = 'block-icon';
+    icon.textContent = block.icon;
+    div.appendChild(icon);
+  }
+
+  // Handle todo checkbox
+  if (block.type === 'todo') {
+    div.onclick = (e) => {
+      if (e.target === div || e.target === div.querySelector('.block-content')) {
+        div.classList.toggle('done');
+        block.done = div.classList.contains('done');
+        saveToStorage();
+      }
+    };
+  }
+
+  // Content
+  const content = document.createElement('div');
+  content.className = 'block-content';
+  content.contentEditable = true;
+  content.textContent = block.content || '';
+  content.dataset.placeholder = getPlaceholder(block.type);
+  content.oninput = () => {
+    block.content = content.textContent;
+    autoSave();
+  };
+  content.onkeydown = (e) => handleKeydown(e, index, content);
+  content.onfocus = () => activeBlock = index;
+
+  div.appendChild(content);
+
+  // Handle
+  const handle = document.createElement('div');
+  handle.className = 'block-handle';
+  handle.textContent = '⋮⋮';
+  handle.draggable = true;
+  handle.ondragstart = (e) => {
+    e.dataTransfer.setData('text/plain', index);
+    div.style.opacity = '0.4';
+  };
+  handle.ondragend = () => div.style.opacity = '1';
+  div.ondragover = (e) => { e.preventDefault(); div.style.borderTop = '2px solid #2383e2'; };
+  div.ondragleave = () => div.style.borderTop = '';
+  div.ondrop = (e) => {
+    e.preventDefault();
+    div.style.borderTop = '';
+    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (fromIndex !== index) {
+      const moved = currentState.blocks.splice(fromIndex, 1)[0];
+      currentState.blocks.splice(index, 0, moved);
+      renderBlocks();
+      autoSave();
+    }
+  };
+  div.appendChild(handle);
+
+  // Actions
+  const actions = document.createElement('div');
+  actions.className = 'block-actions';
+  actions.innerHTML = `
+    <button onclick="changeBlockType(${index})" title="Change type">🔄</button>
+    <button onclick="duplicateBlock(${index})" title="Duplicate">⎘</button>
+    <button onclick="deleteBlock(${index})" title="Delete">🗑</button>
+  `;
+  div.appendChild(actions);
+
+  return div;
+}
+
+function getPlaceholder(type) {
+  const placeholders = {
+    'p': 'Type something, or press / for commands',
+    'h1': 'Heading 1',
+    'h2': 'Heading 2',
+    'h3': 'Heading 3',
+    'todo': 'To-do',
+    'callout': 'Callout',
+    'code': 'Code',
+    'quote': 'Empty quote'
+  };
+  return placeholders[type] || '';
+}
+
+// Block actions
+function addBlockAt(index, type = 'p', content = '') {
+  currentState.blocks.splice(index, 0, { type, content });
+  renderBlocks();
+  setTimeout(() => {
+    const el = document.querySelector(`[data-index="${index}"] .block-content`);
+    if (el) el.focus();
+  }, 50);
+  autoSave();
+}
+
+function deleteBlock(index) {
+  currentState.blocks.splice(index, 1);
+  renderBlocks();
+  autoSave();
+}
+
+function duplicateBlock(index) {
+  const copy = JSON.parse(JSON.stringify(currentState.blocks[index]));
+  currentState.blocks.splice(index + 1, 0, copy);
+  renderBlocks();
+  autoSave();
+}
+
+function changeBlockType(index) {
+  const types = ['p', 'h1', 'h2', 'h3', 'todo', 'callout', 'code', 'quote', 'divider'];
+  const current = currentState.blocks[index].type;
+  const idx = types.indexOf(current);
+  const next = types[(idx + 1) % types.length];
+  currentState.blocks[index].type = next;
+  if (next === 'divider') currentState.blocks[index].content = '';
+  renderBlocks();
+  autoSave();
+}
+
+function addBlockBelow() {
+  addBlockAt(currentState.blocks.length);
+}
+
+function handleKeydown(e, index, content) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    addBlockAt(index + 1);
+  } else if (e.key === 'Backspace' && content.textContent === '' && currentState.blocks.length > 1) {
+    e.preventDefault();
+    deleteBlock(index);
+    setTimeout(() => {
+      const el = document.querySelector(`[data-index="${index - 1}"] .block-content`);
+      if (el) el.focus();
+    }, 50);
+  } else if (e.key === '/' && content.textContent === '') {
+    e.preventDefault();
+    showSlashMenu(content, index);
+  }
+}
+
+// Slash menu (simplified)
+function showSlashMenu(content, index) {
+  const menu = document.createElement('div');
+  menu.className = 'slash-menu';
+  menu.style.left = '20px';
+  menu.style.top = '40px';
+
+  const items = [
+    { icon: 'Aa', label: 'Text', desc: 'Just a paragraph', type: 'p' },
+    { icon: 'H1', label: 'Heading 1', desc: 'Big section heading', type: 'h1' },
+    { icon: 'H2', label: 'Heading 2', desc: 'Medium section heading', type: 'h2' },
+    { icon: 'H3', label: 'Heading 3', desc: 'Small section heading', type: 'h3' },
+    { icon: '☐', label: 'To-do', desc: 'Track tasks', type: 'todo' },
+    { icon: '💡', label: 'Callout', desc: 'Highlight important info', type: 'callout' },
+    { icon: '</>', label: 'Code', desc: 'Code block', type: 'code' },
+    { icon: '"', label: 'Quote', desc: 'Quote someone', type: 'quote' },
+    { icon: '—', label: 'Divider', desc: 'Visual separator', type: 'divider' }
+  ];
+
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'slash-menu-item';
+    el.innerHTML = `
+      <div class="icon">${item.icon}</div>
+      <div>
+        <div>${item.label}</div>
+        <div class="desc">${item.desc}</div>
+      </div>
+    `;
+    el.onclick = () => {
+      currentState.blocks[index].type = item.type;
+      currentState.blocks[index].content = item.type === 'divider' ? '' : currentState.blocks[index].content;
+      if (item.type === 'callout') currentState.blocks[index].icon = '💡';
+      renderBlocks();
+      setTimeout(() => {
+        const el = document.querySelector(`[data-index="${index}"] .block-content`);
+        if (el) el.focus();
+      }, 50);
+      autoSave();
+    };
+    menu.appendChild(el);
+  });
+
+  content.parentElement.appendChild(menu);
+  setTimeout(() => {
+    document.addEventListener('click', function close() {
+      menu.remove();
+      document.removeEventListener('click', close);
+    }, { once: true });
+  }, 10);
+}
+
+// AI panel
+function aiAssist() {
+  document.getElementById('aiPanel').style.display = 'block';
+  document.getElementById('aiInput').focus();
+}
+
+function closeAiPanel() {
+  document.getElementById('aiPanel').style.display = 'none';
+}
+
+function generateAI() {
+  const input = document.getElementById('aiInput').value.trim();
+  if (!input) return;
+
+  const newBlocks = [
+    { type: 'h2', content: '✨ AI Generated' },
+    { type: 'callout', icon: '🤖', content: 'AI response to: ' + input },
+    { type: 'p', content: 'This section was generated based on your prompt. In production, this connects to an AI API for real-time content generation.' },
+    { type: 'p', content: 'You can edit this content directly or use it as a starting point for your study notes.' }
+  ];
+
+  currentState.blocks.push(...newBlocks);
+  renderBlocks();
+  closeAiPanel();
+  autoSave();
+}
+
+// Other actions
+function showHome() { renderHome(); }
+function addNewPage() { showHome(); }
+function changeCover() {
+  const colors = [
+    'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+    'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
+  ];
+  const cover = document.querySelector('.cover');
+  if (cover) cover.style.background = colors[Math.floor(Math.random() * colors.length)];
+}
+
+function exportContent() {
+  let text = `AFCAT Notes: ${document.getElementById('currentTopic').textContent || 'All Topics'}\n\n`;
+  currentState.blocks.forEach(b => {
+    if (b.type === 'h1') text += '# ' + b.content + '\n\n';
+    else if (b.type === 'h2') text += '## ' + b.content + '\n\n';
+    else if (b.type === 'h3') text += '### ' + b.content + '\n\n';
+    else if (b.type === 'divider') text += '---\n\n';
+    else if (b.content) text += b.content + '\n\n';
+  });
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `afcat-notes-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Storage
+function saveToStorage() {
+  try {
+    localStorage.setItem('afcat-notes', JSON.stringify(currentState));
+  } catch (e) {}
+}
+
+function autoSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveToStorage, 500);
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('afcat-notes');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.topic && parsed.blocks) {
+        // Re-attach to topic
+        const [subject, name] = parsed.topic.split('::');
+        if (topicsData[subject] && topicsData[subject][name]) {
+          // Use saved blocks if they exist
+          if (parsed.blocks.length > 0) {
+            topicsData[subject][name].blocks = parsed.blocks;
+          }
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ===== Settings =====
+function openSettings() {
+  document.getElementById('mistralKey').value = localStorage.getItem('mistralKey') || '';
+  document.getElementById('mistralModel').value = localStorage.getItem('mistralModel') || 'mistral-small-latest';
+  document.getElementById('settingsStatus').textContent = '';
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+function saveSettings() {
+  localStorage.setItem('mistralKey', document.getElementById('mistralKey').value.trim());
+  localStorage.setItem('mistralModel', document.getElementById('mistralModel').value);
+  document.getElementById('settingsStatus').innerHTML = '<span style="color:#2ecc71;">✓ Saved</span>';
+  setTimeout(closeSettings, 800);
+}
+async function testMistral() {
+  const key = document.getElementById('mistralKey').value.trim();
+  if (!key) { document.getElementById('settingsStatus').innerHTML = '<span style="color:#e74c3c;">Enter a key first</span>'; return; }
+  document.getElementById('settingsStatus').textContent = 'Testing...';
+  try {
+    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: 'mistral-small-latest', messages: [{ role: 'user', content: 'Reply with just: OK' }], max_tokens: 10 })
+    });
+    if (res.ok) document.getElementById('settingsStatus').innerHTML = '<span style="color:#2ecc71;">✓ Key works</span>';
+    else document.getElementById('settingsStatus').innerHTML = '<span style="color:#e74c3c;">✗ ' + res.status + ' — check key</span>';
+  } catch (e) {
+    document.getElementById('settingsStatus').innerHTML = '<span style="color:#e74c3c;">✗ Network error: ' + e.message + '</span>';
+  }
+}
+
+// ===== Mistral API =====
+async function callMistral(prompt, systemPrompt = '') {
+  const key = localStorage.getItem('mistralKey');
+  if (!key) throw new Error('No API key. Open Settings (⚙️) and add your Mistral key.');
+  const model = localStorage.getItem('mistralModel') || 'mistral-small-latest';
+  const messages = [];
+  if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+  messages.push({ role: 'user', content: prompt });
+  const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+    body: JSON.stringify({ model, messages, max_tokens: 2000, temperature: 0.7 })
+  });
+  if (!res.ok) throw new Error('Mistral API error: ' + res.status);
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+// ===== Practice Mode =====
+let practiceState = {
+  source: 'topic',  // 'topic' | 'pasty' | 'ai'
+  questions: [],
+  currentIdx: 0,
+  answers: [],
+  startTime: null,
+  timerInterval: null
+};
+
+const SAMPLE_QUESTIONS = {
+  english: [
+    { q: "Synonym of 'CANDID':", opts: ["Secretive","Frank","Shy","Rude"], ans: 1, exp: "Candid means frank, honest, and open. It comes from Latin 'candidus' (white, pure)." },
+    { q: "She ___ to school daily.", opts: ["go","goes","going","went"], ans: 1, exp: "Present simple for habits. 3rd person singular takes 'goes'." },
+    { q: "Antonym of 'OPTIMISTIC':", opts: ["Hopeful","Positive","Pessimistic","Cheerful"], ans: 2, exp: "Optimistic expects good outcomes; Pessimistic expects bad." }
+  ],
+  math: [
+    { q: "20% of 500 =", opts: ["50","100","150","200"], ans: 1, exp: "20% = 20/100 = 1/5. 1/5 of 500 = 100." },
+    { q: "If price ↑20%, by what % must consumption ↓ to keep expense same?", opts: ["20%","16.67%","25%","10%"], ans: 1, exp: "100×1.2 = 120. New consumption = 100/120 = 0.8333. Decrease = 1 - 0.8333 = 0.1667 = 16.67%." },
+    { q: "SP=1200, Profit=20%. Find CP.", opts: ["1000","960","1440","1100"], ans: 0, exp: "SP = CP × 1.2 → CP = 1200/1.2 = 1000." }
+  ],
+  ga: [
+    { q: "Fundamental Rights are in which Part?", opts: ["Part II","Part III","Part IV","Part V"], ans: 1, exp: "Part III (Articles 12-35) contains Fundamental Rights." },
+    { q: "Tropic of Cancer passes through how many states?", opts: ["6","7","8","9"], ans: 2, exp: "8 states: Gujarat, Rajasthan, MP, Chhattisgarh, Jharkhand, West Bengal, Tripura, Mizoram." },
+    { q: "Father of Indian Constitution?", opts: ["Nehru","Gandhi","Ambedkar","Patel"], ans: 2, exp: "Dr. B.R. Ambedkar chaired the Drafting Committee." }
+  ],
+  reasoning: [
+    { q: "Woman says 'He is my mother's only son's son'. Relation?", opts: ["Son","Nephew","Cousin","Brother"], ans: 1, exp: "Mother's only son = woman's brother. Brother's son = Nephew." },
+    { q: "Next in 3, 6, 11, 18, ?", opts: ["25","27","29","31"], ans: 1, exp: "Differences: 3, 5, 7, 9 (odd numbers). Next = 18+9 = 27." },
+    { q: "Next letter: A, D, G, J, ?", opts: ["L","M","N","O"], ans: 1, exp: "+3 each step. A→D→G→J→M." }
+  ]
+};
+
+function openPractice() {
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('topicView').style.display = 'none';
+  document.getElementById('practiceView').style.display = 'block';
+  document.getElementById('currentSubject').textContent = 'Practice';
+  document.getElementById('currentTopic').textContent = '';
+  renderPracticeSetup();
+}
+
+function renderPracticeSetup() {
+  const c = document.getElementById('practiceContent');
+  c.innerHTML = `
+    <div class="practice-header">
+      <h1>📝 Practice Mode</h1>
+      <div class="practice-meta">One question at a time. Answer, see explanation, move on.</div>
+    </div>
+
+    <h3 style="margin-top:24px;">Choose source:</h3>
+    <div class="source-picker">
+      <button class="${practiceState.source==='topic'?'active':''}" onclick="setPracticeSource('topic')">📚 Topic Practice</button>
+      <button class="${practiceState.source==='pasty'?'active':''}" onclick="setPracticeSource('pasty')">📄 Paste Past Paper</button>
+      <button class="${practiceState.source==='ai'?'active':''}" onclick="setPracticeSource('ai')">🤖 AI Generate</button>
+    </div>
+
+    <div id="sourceOptions"></div>
+
+    <h3 style="margin-top:32px;">📖 How to do Past Papers (Workflow)</h3>
+    <div class="workflow-step">
+      <h4>Step 1: Setup</h4>
+      <p>Get a real AFCAT past paper (PDF). Don't open it yet. Set a 2-hour timer (120 min for 100 questions).</p>
+    </div>
+    <div class="workflow-step">
+      <h4>Step 2: First pass — speed</h4>
+      <p>Answer what you know in 60 min. Skip hard ones. Mark them with a star. Don't look at answers yet.</p>
+    </div>
+    <div class="workflow-step">
+      <h4>Step 3: Second pass — careful</h4>
+      <p>Use remaining 60 min for starred questions. Still no peeking at answers.</p>
+    </div>
+    <div class="workflow-step">
+      <h4>Step 4: Check + learn</h4>
+      <p>Now check answers. For every wrong one: read the explanation, note the rule you missed, write it down in this app.</p>
+    </div>
+    <div class="workflow-step">
+      <h4>Step 5: Re-attempt after 3 days</h4>
+      <p>Do the same paper again 3 days later. Your score should jump 15-20 points. This is the only way to retain.</p>
+    </div>
+
+    <div style="margin-top:24px; padding:16px; background:#fff3cd; border-radius:6px; font-size:13px;">
+      💡 <b>Honest note:</b> I don't have AFCAT past papers built in. Option 1 (Topic) uses my questions. Option 2 lets you paste any paper. Option 3 has Mistral generate realistic ones (not real past papers).
+    </div>
+  `;
+  renderSourceOptions();
+}
+
+function setPracticeSource(src) {
+  practiceState.source = src;
+  practiceState.questions = [];
+  renderPracticeSetup();
+}
+
+function renderSourceOptions() {
+  const el = document.getElementById('sourceOptions');
+  if (practiceState.source === 'topic') {
+    el.innerHTML = `
+      <label style="display:block; margin:16px 0 8px; font-size:13px; color:#787774;">Subject</label>
+      <select id="practiceSubj" onchange="updatePracticeTopics()" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
+        <option value="english">English</option>
+        <option value="math">Mathematics</option>
+        <option value="ga">General Awareness</option>
+        <option value="reasoning">Reasoning</option>
+      </select>
+      <label style="display:block; margin:12px 0 8px; font-size:13px; color:#787774;">Topic</label>
+      <select id="practiceTopic" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
+        ${Object.keys(SAMPLE_QUESTIONS.english).length ? '' : ''}
+      </select>
+      <p style="font-size:13px; color:#787774; margin-top:8px;">Uses the built-in sample questions for this topic.</p>
+      <button class="primary" style="margin-top:16px; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;" onclick="startTopicPractice()">Start Practice →</button>
+    `;
+  } else if (practiceState.source === 'pasty') {
+    el.innerHTML = `
+      <label style="display:block; margin:16px 0 8px; font-size:13px; color:#787774;">Paste past paper questions (one per line, format below)</label>
+      <textarea id="pastyInput" rows="10" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px; font-family:monospace; font-size:12px;" placeholder="Q: Question text here
+A) Option 1
+B) Option 2
+C) Option 3
+D) Option 4
+ANS: A
+EXP: Brief explanation
+
+Q: Next question
+A) ...
+B) ...
+ANS: B
+EXP: ..."></textarea>
+      <button class="primary" style="margin-top:12px; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;" onclick="startPastyPractice()">Parse & Start →</button>
+    `;
+  } else if (practiceState.source === 'ai') {
+    el.innerHTML = `
+      <label style="display:block; margin:16px 0 8px; font-size:13px; color:#787774;">Topic for AI to generate questions on</label>
+      <input type="text" id="aiTopic" placeholder="e.g., Tenses, Percentages, Indian Constitution" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
+      <label style="display:block; margin:12px 0 8px; font-size:13px; color:#787774;">How many questions?</label>
+      <input type="number" id="aiCount" value="5" min="1" max="20" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
+      <button class="primary" style="margin-top:12px; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;" onclick="startAIPractice()">🤖 Generate with Mistral →</button>
+      <p style="font-size:12px; color:#e8590c; margin-top:8px;">⚠️ AI-generated questions are NOT real AFCAT past papers. Use for practice, not as authentic paper.</p>
+    `;
+  }
+}
+
+function updatePracticeTopics() {
+  // Not used — sample questions are per-subject
+}
+
+function startTopicPractice() {
+  const subj = document.getElementById('practiceSubj').value;
+  practiceState.questions = SAMPLE_QUESTIONS[subj] || [];
+  if (!practiceState.questions.length) { alert('No questions loaded for this subject.'); return; }
+  startPracticeSession();
+}
+
+function startPastyPractice() {
+  const text = document.getElementById('pastyInput').value.trim();
+  if (!text) { alert('Paste some questions first.'); return; }
+  try {
+    practiceState.questions = parsePastyPaper(text);
+    if (!practiceState.questions.length) throw new Error('No questions parsed. Check format.');
+    startPracticeSession();
+  } catch (e) { alert('Parse error: ' + e.message); }
+}
+
+function parsePastyPaper(text) {
+  // Format: Q: ... \n A) ... \n B) ... \n C) ... \n D) ... \n ANS: A \n EXP: ...
+  const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  const questions = [];
+  for (const block of blocks) {
+    const lines = block.split('\n').map(l => l.trim());
+    const qLine = lines.find(l => /^Q[:.]/i.test(l));
+    if (!qLine) continue;
+    const q = qLine.replace(/^Q[:.]\s*/i, '');
+    const opts = lines.filter(l => /^[A-D][).]/i.test(l)).map(l => l.replace(/^[A-D][).]\s*/i, ''));
+    const ansLine = lines.find(l => /^ANS[:.]/i.test(l));
+    const expLine = lines.find(l => /^EXP[:.]/i.test(l));
+    const ansIdx = ansLine ? 'ABCD'.indexOf(ansLine.replace(/^ANS[:.]\s*/i, '').toUpperCase().charAt(0)) : -1;
+    if (opts.length >= 2 && ansIdx >= 0) {
+      questions.push({ q, opts, ans: ansIdx, exp: expLine ? expLine.replace(/^EXP[:.]\s*/i, '') : '' });
+    }
+  }
+  return questions;
+}
+
+async function startAIPractice() {
+  const topic = document.getElementById('aiTopic').value.trim();
+  const count = parseInt(document.getElementById('aiCount').value) || 5;
+  if (!topic) { alert('Enter a topic.'); return; }
+  if (!localStorage.getItem('mistralKey')) { alert('Add your Mistral API key in Settings (⚙️) first.'); return; }
+  const btn = event.target;
+  btn.textContent = '⏳ Generating...'; btn.disabled = true;
+  try {
+    const prompt = `Generate ${count} AFCAT-style MCQ questions on "${topic}". For each: clear question, 4 options A/B/C/D, indicate correct answer, brief explanation. Format strictly as:\n\nQ: [question]\nA) [opt1]\nB) [opt2]\nC) [opt3]\nD) [opt4]\nANS: [letter]\nEXP: [one-line explanation]\n\n(blank line between questions)`;
+    const text = await callMistral(prompt, 'You are an AFCAT exam prep tutor. Generate realistic, exam-quality questions.');
+    practiceState.questions = parsePastyPaper(text);
+    if (!practiceState.questions.length) throw new Error('AI returned no parseable questions. Try again.');
+    startPracticeSession();
+  } catch (e) {
+    alert('AI error: ' + e.message);
+  } finally {
+    btn.textContent = '🤖 Generate with Mistral →'; btn.disabled = false;
+  }
+}
+
+function startPracticeSession() {
+  practiceState.currentIdx = 0;
+  practiceState.answers = new Array(practiceState.questions.length).fill(null);
+  practiceState.startTime = Date.now();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = practiceState.questions[practiceState.currentIdx];
+  const total = practiceState.questions.length;
+  const c = document.getElementById('practiceContent');
+  c.innerHTML = `
+    <div class="practice-header">
+      <h1>📝 Question ${practiceState.currentIdx + 1} of ${total}</h1>
+      <div class="practice-meta">
+        <span class="timer" id="timer">⏱️ 00:00</span>
+        · Score so far: <b>${score()}</b>/${practiceState.currentIdx}
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:${(practiceState.currentIdx / total) * 100}%"></div></div>
+
+    <div class="question-card">
+      <div class="question-text" id="qtext"></div>
+      <div class="options-list" id="opts"></div>
+      <div class="explanation" id="exp"></div>
+      <div class="practice-actions">
+        <button class="primary" id="submitBtn" onclick="submitAnswer()">Submit</button>
+        <button id="nextBtn" style="display:none;" onclick="nextQuestion()">${practiceState.currentIdx === total - 1 ? 'See Score' : 'Next →'}</button>
+        <button onclick="addToNotes()">📝 Add to my notes</button>
+      </div>
+    </div>
+  `;
+  // Render with KaTeX
+  const qtextEl = document.getElementById('qtext');
+  qtextEl.textContent = q.q;
+  renderMathInElement(qtextEl);
+
+  const optsEl = document.getElementById('opts');
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.dataset.idx = i;
+    div.textContent = String.fromCharCode(65 + i) + ') ' + opt;
+    div.onclick = () => {
+      document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      div.classList.add('selected');
+    };
+    optsEl.appendChild(div);
+  });
+  renderMathInElement(optsEl);
+
+  startTimer();
+}
+
+function submitAnswer() {
+  const selected = document.querySelector('.option.selected');
+  if (!selected) { alert('Select an option first.'); return; }
+  const idx = parseInt(selected.dataset.idx);
+  const q = practiceState.questions[practiceState.currentIdx];
+  practiceState.answers[practiceState.currentIdx] = idx;
+
+  // Reveal
+  document.querySelectorAll('.option').forEach((o, i) => {
+    o.onclick = null;
+    if (i === q.ans) o.classList.add('correct');
+    else if (i === idx) o.classList.add('wrong');
+  });
+  const expEl = document.getElementById('exp');
+  expEl.textContent = '💡 ' + (q.exp || 'No explanation.');
+  expEl.classList.add('show');
+  renderMathInElement(expEl);
+
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  stopTimer();
+}
+
+function nextQuestion() {
+  if (practiceState.currentIdx === practiceState.questions.length - 1) {
+    showScore();
+  } else {
+    practiceState.currentIdx++;
+    renderQuestion();
+  }
+}
+
+function score() {
+  return practiceState.answers.filter((a, i) => a !== null && a === practiceState.questions[i].ans).length;
+}
+
+function showScore() {
+  stopTimer();
+  const s = score();
+  const total = practiceState.questions.length;
+  const pct = Math.round((s / total) * 100);
+  const elapsed = Math.floor((Date.now() - practiceState.startTime) / 1000);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  const c = document.getElementById('practiceContent');
+  c.innerHTML = `
+    <div class="score-summary">
+      <h1>🎉 Practice Complete!</h1>
+      <div class="score-big">${s}/${total}</div>
+      <div class="score-label">${pct}% accuracy · ${mins}m ${secs}s</div>
+      <div style="margin:24px 0;">
+        <button class="primary" style="padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin:4px;" onclick="reviewAnswers()">📋 Review Answers</button>
+        <button style="padding:10px 20px; background:white; border:1px solid #ebebeb; border-radius:4px; cursor:pointer; font-size:14px; margin:4px;" onclick="openPractice()">🔄 New Practice</button>
+        <button style="padding:10px 20px; background:white; border:1px solid #ebebeb; border-radius:4px; cursor:pointer; font-size:14px; margin:4px;" onclick="showHome()">🏠 Home</button>
+      </div>
+      <p style="font-size:13px; color:#787774; margin-top:20px;">
+        💡 <b>What to do now:</b> For each wrong answer, write the rule in your notes. Re-attempt this set in 3 days.
+      </p>
+    </div>
+  `;
+}
+
+function reviewAnswers() {
+  const c = document.getElementById('practiceContent');
+  c.innerHTML = '<h2>📋 Review</h2>' + practiceState.questions.map((q, i) => {
+    const a = practiceState.answers[i];
+    const correct = a === q.ans;
+    return `
+      <div class="question-card">
+        <div class="question-text"><b>Q${i+1}.</b> ${q.q}</div>
+        <div style="font-size:14px; margin:8px 0;">
+          ${q.opts.map((o, j) => `<div class="option ${j === q.ans ? 'correct' : (j === a && !correct ? 'wrong' : '')}">${String.fromCharCode(65+j)}) ${o}</div>`).join('')}
+        </div>
+        <div class="explanation show" style="display:block;">${correct ? '✅' : '❌'} ${q.exp || ''}</div>
+      </div>
+    `;
+  }).join('') + '<button style="margin:20px 0; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="showHome()">🏠 Home</button>';
+  renderMathInElement(c);
+}
+
+function addToNotes() {
+  const q = practiceState.questions[practiceState.currentIdx];
+  const correct = practiceState.answers[practiceState.currentIdx] === q.ans;
+  const note = `**Q: ${q.q}**\nMy answer: ${q.opts[practiceState.answers[practiceState.currentIdx]] || '(skipped)'}\nCorrect: ${q.opts[q.ans]}\n${correct ? '✅' : '❌'} ${q.exp || ''}`;
+  // Append to a "Practice Notes" topic
+  if (!topicsData.english['Practice Notes']) {
+    topicsData.english['Practice Notes'] = { icon: '📝', cover: 'linear-gradient(135deg, #f39c12 0%, #e74c3c 100%)', blocks: [] };
+  }
+  topicsData.english['Practice Notes'].blocks.push({ type: 'p', content: note });
+  alert('Added to "Practice Notes" topic (English sidebar).');
+}
+
+function startTimer() {
+  stopTimer();
+  practiceState.timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - practiceState.startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    const t = document.getElementById('timer');
+    if (t) {
+      t.textContent = `⏱️ ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      if (elapsed > 120) t.classList.add('warn');
+    }
+  }, 1000);
+}
+function stopTimer() { if (practiceState.timerInterval) clearInterval(practiceState.timerInterval); }
+
+// ===== KaTeX =====
+function renderMathInElement(el) {
+  if (window.renderMathInElement) {
+    try { renderMathInElement(el, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false }); } catch(e) {}
+  }
+}
+
+// Hook into existing renderBlocks to render math after each render
+const _origRenderBlocks = renderBlocks;
+renderBlocks = function() {
+  _origRenderBlocks();
+  setTimeout(() => {
+    document.querySelectorAll('.block-content').forEach(el => renderMathInElement(el));
+  }, 50);
+};
+
+// Init
+loadFromStorage();
+renderHome();
+</script>
+
+</body>
+</html>

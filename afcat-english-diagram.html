@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFCAT English — Crack It!</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; padding: 16px; }
+
+  .title-bar {
+    background: linear-gradient(135deg, #1971c2, #0c8599);
+    color: white; text-align: center; padding: 20px; border-radius: 12px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(25,113,194,0.3);
+  }
+  .title-bar h1 { font-size: 28px; }
+  .title-bar p { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    border-radius: 12px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-left: 5px solid; transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .card h2 { font-size: 18px; margin-bottom: 10px; }
+  .card ul { list-style: none; padding: 0; }
+  .card ul li { padding: 3px 0; font-size: 14px; line-height: 1.5; }
+  .card .hack { margin-top: 10px; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+
+  .vocab { background: #fff8f0; border-color: #e8590c; }
+  .vocab h2 { color: #e8590c; }
+  .vocab .hack { background: #ffd8a8; color: #e8590c; }
+
+  .grammar { background: #f0f7ff; border-color: #1971c2; }
+  .grammar h2 { color: #1971c2; }
+  .grammar .hack { background: #a5d8ff; color: #1971c2; }
+
+  .rc { background: #f0fff4; border-color: #2f9e44; }
+  .rc h2 { color: #2f9e44; }
+  .rc .hack { background: #b2f2bb; color: #2f9e44; }
+
+  .sc { background: #fdf0ff; border-color: #9c36b5; }
+  .sc h2 { color: #9c36b5; }
+  .sc .hack { background: #eebefa; color: #9c36b5; }
+
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+  .es { background: #fff5f5; border-color: #e03131; }
+  .es h2 { color: #e03131; }
+  .pj { background: #f0fffc; border-color: #0c8599; }
+  .pj h2 { color: #0c8599; }
+  .plan { background: #f1f3f5; border-color: #868e96; }
+  .plan h2 { color: #868e96; }
+  .plan .week { padding: 5px 0; font-size: 13px; border-bottom: 1px dashed #dee2e6; }
+  .plan .week:last-child { border: none; }
+  .plan .target { margin-top: 8px; padding: 8px; background: #d3f9d8; border-radius: 6px; font-size: 13px; font-weight: 600; color: #2f9e44; text-align: center; }
+
+  .tips-bar {
+    background: linear-gradient(135deg, #1971c2, #0c8599);
+    color: white; padding: 16px 20px; border-radius: 12px;
+    margin-bottom: 16px; box-shadow: 0 4px 15px rgba(25,113,194,0.3);
+  }
+  .tips-bar h2 { font-size: 18px; margin-bottom: 10px; text-align: center; }
+  .tips-bar .tip { font-size: 14px; padding: 4px 0; }
+
+  .footer {
+    text-align: center; padding: 16px; font-size: 16px; font-weight: 700;
+    color: #1971c2; background: #e7f5ff; border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="title-bar">
+  <h1>🎯 AFCAT ENGLISH — CRACK IT!</h1>
+  <p>Complete One-Pager Strategy Guide</p>
+</div>
+
+<div class="grid">
+  <div class="card vocab">
+    <h2>📚 1. VOCABULARY (30% Weightage)</h2>
+    <ul>
+      <li>• <b>Synonyms & Antonyms</b> — Learn 10 words/day from PYQs</li>
+      <li>• <b>Idioms & Phrases</b> — Make visual stories for each</li>
+      <li>• <b>One-word Substitution</b> — Group by theme</li>
+      <li>• <b>Cloze Test</b> — Read the FULL passage first</li>
+      <li>• <b>Word Meanings</b> — Use root words technique</li>
+    </ul>
+    <div class="hack">🔑 Read The Hindu editorial daily | Use Anki flashcards | Learn Latin/Greek roots</div>
+  </div>
+
+  <div class="card grammar">
+    <h2>✏️ 2. GRAMMAR (25% Weightage)</h2>
+    <ul>
+      <li>• <b>Tenses</b> — Master all 12 tenses with examples</li>
+      <li>• <b>Articles (a, an, the)</b> — Rule-based approach</li>
+      <li>• <b>Prepositions</b> — Fixed prepositions list (50+)</li>
+      <li>• <b>Subject-Verb Agreement</b> — Find the real subject</li>
+      <li>• <b>Active/Passive Voice</b> — Conversion rules</li>
+      <li>• <b>Direct/Indirect Speech</b> — Pattern practice</li>
+    </ul>
+    <div class="hack">🔑 Grammar cheat sheet | 20 error-spotting daily | Wren & Martin is gold!</div>
+  </div>
+
+  <div class="card rc">
+    <h2>📖 3. READING COMPREHENSION (20%)</h2>
+    <ul>
+      <li>• Read <b>questions FIRST</b>, then passage</li>
+      <li>• Underline keywords while reading</li>
+      <li>• Look for tone words (however, but, therefore)</li>
+      <li>• Eliminate extreme options first</li>
+      <li>• Main idea = first & last line of passage</li>
+    </ul>
+    <div class="hack">🔑 2 passages daily (10 min each) | No outside knowledge | 8 min/passage max</div>
+  </div>
+
+  <div class="card sc">
+    <h2>🧩 4. SENTENCE COMPLETION (15%)</h2>
+    <ul>
+      <li>• Read <b>full sentence</b> before answering</li>
+      <li>• Look for clue words (because, although, since)</li>
+      <li>• Match tone — formal/informal/neutral</li>
+      <li>• Eliminate grammatically wrong options first</li>
+      <li>• Context is king — meaning > vocabulary</li>
+    </ul>
+    <div class="hack">🔑 Two options? Re-read! | Connector words reveal answer | 15 fill-blanks daily</div>
+  </div>
+</div>
+
+<div class="bottom-grid">
+  <div class="card es">
+    <h2>🔍 5. ERROR SPOTTING</h2>
+    <ul>
+      <li>✅ Subject-Verb agreement</li>
+      <li>✅ Tense consistency</li>
+      <li>✅ Parallel structure</li>
+      <li>✅ Article usage</li>
+      <li>✅ Preposition errors</li>
+    </ul>
+    <div style="margin-top:8px; font-size:13px; color:#e03131; font-weight:600;">🔑 Read sentence 2x silently</div>
+  </div>
+
+  <div class="card pj">
+    <h2>🔀 6. PARA JUMBLES</h2>
+    <ul>
+      <li>✅ Find the opening sentence first</li>
+      <li>✅ Look for pronoun references</li>
+      <li>✅ Chronological/logical order</li>
+      <li>✅ Connectors: also, however, finally</li>
+      <li>✅ Read arranged version to verify</li>
+    </ul>
+    <div style="margin-top:8px; font-size:13px; color:#0c8599; font-weight:600;">🔑 Find pairs that go together</div>
+  </div>
+
+  <div class="card plan">
+    <h2>📅 30-DAY PLAN</h2>
+    <div class="week">📗 <b>Week 1:</b> Grammar rules + Vocab</div>
+    <div class="week">📘 <b>Week 2:</b> RC practice + Idioms</div>
+    <div class="week">📙 <b>Week 3:</b> Mock tests + Error spot</div>
+    <div class="week">📕 <b>Week 4:</b> Full mocks + Revision</div>
+    <div class="target">⏰ 1.5 hrs/day | 📝 5 Mocks | ✅ 80%+ accuracy</div>
+  </div>
+</div>
+
+<div class="tips-bar">
+  <h2>⚡ GOLDEN TIPS</h2>
+  <div class="tip">1️⃣ Solve <b>PYQs</b> (Previous Year Questions) — 50% repeat patterns</div>
+  <div class="tip">2️⃣ Read <b>English newspaper</b> daily — builds vocab + RC speed</div>
+  <div class="tip">3️⃣ Take <b>timed mocks</b> — exam is 120 min for 100 questions</div>
+  <div class="tip">4️⃣ <b>Don't skip easy questions</b> — maximize attempts!</div>
+</div>
+
+<div class="footer">💪 "Practice makes permanent — Start today, crack AFCAT tomorrow!"</div>
+
+</body>
+</html>
