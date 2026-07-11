@@ -1,693 +1,335 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="afcat">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AFCAT Notes — Notion Style</title>
+<title>AFCAT Prep — Notes, Practice, AI Tutor</title>
+
+<!-- Tailwind CSS + DaisyUI plugin (via Play CDN — no build step) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] }
+      }
+    },
+    daisyui: {
+      themes: [{
+        afcat: {
+          primary: '#1e40af',
+          'primary-content': '#ffffff',
+          secondary: '#0c8599',
+          accent: '#f59e0b',
+          neutral: '#1f2937',
+          'base-100': '#ffffff',
+          'base-200': '#f7f6f3',
+          'base-300': '#ececeb',
+          info: '#3b82f6',
+          success: '#10b981',
+          warning: '#f59e0b',
+          error: '#ef4444'
+        }
+      }]
+    }
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.js"></script>
+
+<!-- KaTeX for math rendering -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<!-- Inter font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: #ffffff;
-    color: #37352f;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { font-family: 'Inter', sans-serif; }
 
-  /* Top bar */
-  .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #ebebeb;
-    padding: 8px 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 44px;
-  }
-  .topbar .breadcrumb {
-    font-size: 13px;
-    color: #787774;
-    flex: 1;
-  }
-  .topbar .breadcrumb span { color: #37352f; font-weight: 500; }
-  .topbar button {
-    background: transparent;
-    border: 1px solid #ebebeb;
-    color: #37352f;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-  .topbar button:hover { background: #f7f6f3; }
-  .topbar button.primary {
-    background: #2383e2;
-    color: white;
-    border-color: #2383e2;
-  }
-  .topbar button.primary:hover { background: #1a6fc4; }
-
-  /* Sidebar */
-  .sidebar {
-    position: fixed;
-    left: 0; top: 44px; bottom: 0;
-    width: 260px;
-    background: #f7f6f3;
-    border-right: 1px solid #ebebeb;
-    padding: 14px 8px;
-    overflow-y: auto;
-    z-index: 50;
-  }
-  .sidebar h3 {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #787774;
-    padding: 6px 12px;
-    margin-top: 8px;
-    letter-spacing: 0.5px;
-  }
-  .sidebar-item {
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #37352f;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 1px 0;
-  }
-  .sidebar-item:hover { background: #ececeb; }
-  .sidebar-item.active { background: #e8e7e3; font-weight: 500; }
-  .sidebar-item .icon { font-size: 16px; }
-
-  /* Page */
-  .page {
-    margin-left: 260px;
-    padding: 0;
-    min-height: calc(100vh - 44px);
-  }
-
-  /* Cover */
-  .cover {
-    height: 200px;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ffd93d 100%);
-    position: relative;
-  }
-  .cover-controls {
-    position: absolute;
-    bottom: 12px;
-    right: 20px;
-    display: flex;
-    gap: 6px;
-  }
-  .cover-controls button {
-    background: rgba(255,255,255,0.9);
-    border: none;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #37352f;
-  }
-  .cover-controls button:hover { background: white; }
-
-  /* Page header */
-  .page-header {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 30px 60px 10px;
-  }
-  .page-icon {
-    font-size: 78px;
-    line-height: 1;
-    margin-bottom: 4px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .page-title {
-    font-size: 40px;
-    font-weight: 700;
-    color: #37352f;
-    border: none;
-    outline: none;
-    width: 100%;
-    padding: 4px 0;
-    margin-bottom: 4px;
-    font-family: inherit;
-  }
-  .page-title::placeholder { color: #c4c4c4; }
-  .page-meta {
-    font-size: 13px;
-    color: #787774;
-    margin-top: 8px;
-  }
-
-  /* Content blocks */
-  .content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px 60px 200px;
-  }
-
-  .block {
-    position: relative;
-    padding: 3px 0;
-    margin: 1px 0;
-    border-radius: 3px;
-    transition: background 0.1s;
-  }
-  .block:hover { background: #f7f6f3; }
-  .block:hover .block-handle { opacity: 1; }
-  .block:hover .block-actions { opacity: 1; }
-
+  /* Block editor — these are too custom for Tailwind, kept here */
+  .block { position: relative; padding: 3px 2px; margin: 1px 0; border-radius: 3px; transition: background 0.1s; }
+  .block:hover { background: rgba(0,0,0,0.03); }
+  .block:hover .block-handle, .block:hover .block-actions { opacity: 1; }
   .block-handle {
-    position: absolute;
-    left: -40px;
-    top: 4px;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    opacity: 0;
-    transition: opacity 0.1s;
-    color: #c4c4c4;
-    font-size: 14px;
-    user-select: none;
+    position: absolute; left: -36px; top: 4px; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center; cursor: grab;
+    opacity: 0; transition: opacity 0.1s; color: #9ca3af; font-size: 14px; user-select: none;
   }
-  .block-handle:hover { color: #787774; }
+  .block-handle:hover { color: #4b5563; }
   .block-handle:active { cursor: grabbing; }
-
   .block-actions {
-    position: absolute;
-    right: -100px;
-    top: 4px;
-    display: flex;
-    gap: 2px;
-    opacity: 0;
-    transition: opacity 0.1s;
+    position: absolute; right: -110px; top: 4px; display: flex; gap: 2px;
+    opacity: 0; transition: opacity 0.1s;
   }
   .block-actions button {
-    background: transparent;
-    border: none;
-    padding: 4px 6px;
-    cursor: pointer;
-    color: #787774;
-    font-size: 12px;
-    border-radius: 3px;
+    background: transparent; border: none; padding: 4px 6px; cursor: pointer;
+    color: #6b7280; font-size: 13px; border-radius: 3px;
   }
-  .block-actions button:hover { background: #ececeb; color: #37352f; }
+  .block-actions button:hover { background: rgba(0,0,0,0.06); color: #1f2937; }
+  .block-content { outline: none; padding: 3px 2px; min-height: 24px; font-size: 16px; line-height: 1.6; word-wrap: break-word; }
+  .block-content:empty::before { content: attr(data-placeholder); color: #d1d5db; }
 
-  .block-content {
-    outline: none;
-    padding: 3px 2px;
-    min-height: 24px;
-    font-size: 16px;
-    line-height: 1.6;
-    word-wrap: break-word;
-  }
-  .block-content:empty::before {
-    content: attr(data-placeholder);
-    color: #c4c4c4;
-  }
-
-  /* Block types */
   .block.h1 .block-content { font-size: 30px; font-weight: 700; line-height: 1.3; padding: 20px 0 4px; }
-  .block.h2 .block-content { font-size: 24px; font-weight: 600; line-height: 1.3; padding: 16px 0 4px; }
-  .block.h3 .block-content { font-size: 20px; font-weight: 600; line-height: 1.3; padding: 12px 0 4px; }
-  .block.todo .block-content { padding-left: 24px; position: relative; }
+  .block.h2 .block-content { font-size: 24px; font-weight: 600; line-height: 1.3; padding: 14px 0 4px; }
+  .block.h3 .block-content { font-size: 19px; font-weight: 600; line-height: 1.3; padding: 10px 0 4px; }
+  .block.todo .block-content { padding-left: 28px; position: relative; }
   .block.todo::before {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 10px;
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid #c4c4c4;
-    border-radius: 3px;
-    cursor: pointer;
+    content: ''; position: absolute; left: 2px; top: 9px; width: 18px; height: 18px;
+    border: 1.5px solid #cbd5e1; border-radius: 4px; cursor: pointer; background: white;
   }
-  .block.todo.done .block-content { text-decoration: line-through; color: #787774; }
+  .block.todo.done .block-content { text-decoration: line-through; color: #9ca3af; }
   .block.todo.done::before {
-    background: #2383e2;
-    border-color: #2383e2;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2' d='M3 8l3 3 7-7'/%3E%3C/svg%3E");
-    background-size: 12px;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: #1e40af; border-color: #1e40af;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' d='M3 8l3 3 7-7'/%3E%3C/svg%3E");
+    background-size: 14px; background-position: center; background-repeat: no-repeat;
   }
   .block.callout {
-    padding: 16px 16px 16px 50px;
-    background: #f7f6f3;
-    border-radius: 4px;
-    border-left: 3px solid #2383e2;
-    margin: 8px 0;
+    padding: 14px 16px 14px 50px; background: #f0f9ff; border-radius: 6px;
+    border-left: 4px solid #1e40af; margin: 8px 0;
   }
-  .block.callout .block-icon {
-    position: absolute;
-    left: 16px;
-    top: 16px;
-    font-size: 20px;
-  }
+  .block.callout .block-icon { position: absolute; left: 16px; top: 14px; font-size: 20px; }
   .block.callout .block-content { font-size: 15px; }
   .block.code {
-    background: #f7f6f3;
-    border-radius: 4px;
-    padding: 12px 16px;
-    font-family: 'SF Mono', Monaco, monospace;
-    font-size: 13px;
-    margin: 4px 0;
+    background: #1e293b; color: #e2e8f0; border-radius: 6px;
+    padding: 14px 16px; font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 13px; margin: 6px 0; line-height: 1.6; white-space: pre-wrap;
   }
-  .block.code .block-content { font-family: inherit; font-size: inherit; }
-  .block.divider {
-    padding: 12px 0;
-    cursor: pointer;
-  }
-  .block.divider::before {
-    content: '';
-    display: block;
-    height: 1px;
-    background: #ebebeb;
-  }
-  .block.quote { border-left: 3px solid #37352f; padding-left: 16px; margin: 4px 0; }
-  .block.quote .block-content { font-style: italic; color: #4a4a4a; }
+  .block.code .block-content { color: inherit; font-family: inherit; font-size: inherit; }
+  .block.divider { padding: 14px 0; cursor: pointer; }
+  .block.divider::before { content: ''; display: block; height: 1px; background: #e5e7eb; }
+  .block.quote { border-left: 4px solid #4b5563; padding-left: 16px; margin: 6px 0; }
+  .block.quote .block-content { font-style: italic; color: #4b5563; }
 
-  /* Add block button */
   .add-block {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    margin: 4px 0;
-    color: #c4c4c4;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: background 0.1s;
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    margin: 4px 0; color: #9ca3af; font-size: 14px; cursor: pointer; border-radius: 4px;
+    transition: all 0.1s;
   }
-  .add-block:hover { background: #f7f6f3; color: #787774; }
-  .add-block-icon {
-    width: 24px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-  }
+  .add-block:hover { background: rgba(0,0,0,0.04); color: #4b5563; }
+  .add-block-icon { font-size: 16px; }
 
   /* Slash menu */
   .slash-menu {
-    position: absolute;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
-    padding: 6px;
-    min-width: 280px;
-    z-index: 1000;
-    max-height: 320px;
-    overflow-y: auto;
+    position: absolute; background: white; border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18); padding: 6px; min-width: 280px;
+    z-index: 1000; max-height: 320px; overflow-y: auto; border: 1px solid #e5e7eb;
   }
   .slash-menu-item {
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 14px;
+    padding: 8px 10px; border-radius: 4px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px; font-size: 14px;
   }
-  .slash-menu-item:hover { background: #f7f6f3; }
+  .slash-menu-item:hover { background: #f3f4f6; }
   .slash-menu-item .icon {
-    width: 32px; height: 32px;
-    background: #f7f6f3;
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
+    width: 36px; height: 36px; background: #f3f4f6; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;
   }
-  .slash-menu-item .desc { color: #787774; font-size: 12px; }
+  .slash-menu-item .desc { color: #6b7280; font-size: 12px; }
 
-  /* AI panel */
-  .ai-panel {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 380px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    border: 1px solid #ebebeb;
-    z-index: 200;
-  }
-  .ai-panel-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #ebebeb;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .ai-panel-body {
-    padding: 12px 16px;
-  }
-  .ai-panel textarea {
-    width: 100%;
-    min-height: 60px;
-    border: 1px solid #ebebeb;
-    border-radius: 4px;
-    padding: 8px;
-    font-family: inherit;
-    font-size: 14px;
-    resize: vertical;
-    outline: none;
-  }
-  .ai-panel textarea:focus { border-color: #2383e2; }
-  .ai-panel-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-    justify-content: flex-end;
-  }
-  .ai-panel button {
-    background: #2383e2;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .ai-panel button:hover { background: #1a6fc4; }
-  .ai-panel button.secondary { background: #f7f6f3; color: #37352f; }
-  .ai-panel button.secondary:hover { background: #ececeb; }
+  /* Toast positioning */
+  .toast-stack { position: fixed; top: 70px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; max-width: 360px; }
+  .toast-item { animation: slideIn 0.2s ease; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #787774;
-  }
-  .empty-state h2 { font-size: 24px; margin-bottom: 8px; color: #37352f; }
-
-  /* Topic grid (initial) */
-  .topic-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
-    padding: 0 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .topic-card {
-    border: 1px solid #ebebeb;
-    border-radius: 8px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: white;
-  }
-  .topic-card:hover {
-    border-color: #c4c4c4;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  }
-  .topic-card .icon { font-size: 28px; margin-bottom: 8px; }
-  .topic-card .title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-  .topic-card .meta { font-size: 12px; color: #787774; }
-
-  /* Section headers */
-  .section-header {
-    max-width: 1200px;
-    margin: 30px auto 16px;
-    padding: 0 60px;
-    font-size: 13px;
-    color: #787774;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: #d3d3d3; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #b3b3b3; }
-
-  /* KaTeX fix for contentEditable */
-  .katex { font-size: 1.1em; }
+  /* KaTeX tweaks */
+  .katex { font-size: 1.05em; }
   .katex-display { margin: 8px 0; }
 
-  /* Settings Modal */
-  .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
-    display: none; align-items: center; justify-content: center;
-    z-index: 1000;
-  }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: white; border-radius: 8px;
-    width: 90%; max-width: 480px; padding: 24px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
-  }
-  .modal h2 { font-size: 20px; margin-bottom: 16px; }
-  .modal label { display: block; font-size: 13px; color: #787774; margin: 12px 0 4px; font-weight: 500; }
-  .modal input, .modal textarea, .modal select {
-    width: 100%; padding: 8px 10px;
-    border: 1px solid #ebebeb; border-radius: 4px;
-    font-size: 14px; font-family: inherit;
-  }
-  .modal input:focus, .modal textarea:focus { outline: none; border-color: #2383e2; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
-  .modal-actions button {
-    padding: 8px 14px; border-radius: 4px; font-size: 14px; cursor: pointer;
-    border: 1px solid #ebebeb; background: white; color: #37352f;
-  }
-  .modal-actions button.primary { background: #2383e2; color: white; border-color: #2383e2; }
-  .modal-actions button.primary:hover { background: #1a6fc4; }
+  /* Sidebar scrollbar */
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 
-  /* Practice Mode */
-  .practice-container { max-width: 800px; margin: 0 auto; padding: 40px 60px; }
-  .practice-header { margin-bottom: 24px; }
-  .practice-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
-  .practice-meta { font-size: 13px; color: #787774; }
-  .progress-bar {
-    height: 4px; background: #ebebeb; border-radius: 2px; overflow: hidden;
-    margin: 16px 0;
-  }
-  .progress-bar-fill { height: 100%; background: #2383e2; transition: width 0.3s; }
-  .question-card {
-    background: white; border: 1px solid #ebebeb; border-radius: 8px;
-    padding: 24px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  }
-  .question-text { font-size: 16px; line-height: 1.6; margin-bottom: 16px; white-space: pre-wrap; }
-  .options-list { display: flex; flex-direction: column; gap: 8px; }
-  .option {
-    padding: 12px 16px; border: 1.5px solid #ebebeb; border-radius: 6px;
-    cursor: pointer; transition: all 0.15s; font-size: 15px;
-  }
-  .option:hover { border-color: #2383e2; background: #f7f9fc; }
-  .option.selected { border-color: #2383e2; background: #ebf3fc; }
-  .option.correct { border-color: #2ecc71; background: #e8f8f0; }
-  .option.wrong { border-color: #e74c3c; background: #fdf0ef; }
-  .explanation {
-    margin-top: 16px; padding: 16px; background: #f7f6f3;
-    border-radius: 6px; border-left: 3px solid #2383e2;
-    font-size: 14px; line-height: 1.6; white-space: pre-wrap;
-    display: none;
-  }
-  .explanation.show { display: block; }
-  .practice-actions { display: flex; gap: 8px; margin-top: 16px; }
-  .practice-actions button {
-    padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;
-    border: 1px solid #ebebeb; background: white; color: #37352f;
-  }
-  .practice-actions button.primary { background: #2383e2; color: white; border-color: #2383e2; }
-  .practice-actions button.primary:hover { background: #1a6fc4; }
+  /* Cover controls */
+  .cover-controls button { background: rgba(255,255,255,0.9); border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; color: #1f2937; font-weight: 500; transition: background 0.15s; }
+  .cover-controls button:hover { background: white; }
 
-  .timer { font-size: 13px; color: #787774; }
-  .timer.warn { color: #e74c3c; font-weight: 600; }
+  /* Mobile sidebar */
+  @media (max-width: 768px) {
+    .block-handle, .block-actions { display: none; }
+    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+    .sidebar.open { transform: translateX(0); }
+  }
 
-  .source-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
-  .source-picker button {
-    padding: 8px 14px; border: 1px solid #ebebeb; border-radius: 4px;
-    background: white; cursor: pointer; font-size: 13px;
-  }
-  .source-picker button.active { background: #2383e2; color: white; border-color: #2383e2; }
-
-  .score-summary {
-    text-align: center; padding: 40px 20px;
-  }
-  .score-big { font-size: 64px; font-weight: 700; color: #2383e2; }
-  .score-label { font-size: 16px; color: #787774; margin-bottom: 24px; }
-
-  .workflow-step {
-    padding: 16px; border-left: 3px solid #2383e2; background: #f7f6f3;
-    margin: 12px 0; border-radius: 0 6px 6px 0;
-  }
-  .workflow-step h4 { font-size: 15px; margin-bottom: 6px; }
-  .workflow-step p { font-size: 13px; color: #4a4a4a; line-height: 1.5; }
-
-  .paper-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 8px; font-size: 13px; cursor: pointer; border-radius: 4px;
-  }
-  .paper-item:hover { background: #ececeb; }
-  .paper-item .paper-meta { font-size: 11px; color: #9b9a97; }
-  .paper-item .paper-del {
-    opacity: 0; color: #e74c3c; cursor: pointer; padding: 0 4px;
-  }
-  .paper-item:hover .paper-del { opacity: 1; }
+  /* Option card (practice mode) */
+  .opt-card { padding: 14px 18px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 15px; background: white; }
+  .opt-card:hover { border-color: #1e40af; background: #eff6ff; }
+  .opt-card.selected { border-color: #1e40af; background: #dbeafe; }
+  .opt-card.correct { border-color: #10b981; background: #d1fae5; }
+  .opt-card.wrong { border-color: #ef4444; background: #fee2e2; }
+  .opt-card:disabled, .opt-card.disabled { cursor: not-allowed; opacity: 0.7; }
 </style>
 </head>
-<body>
+<body class="bg-base-200 text-base-content">
 
-<div class="topbar">
-  <div class="breadcrumb">📚 AFCAT Notes › <span id="currentSubject">All Topics</span> › <span id="currentTopic"></span></div>
-  <button onclick="showHome()">🏠 Home</button>
-  <button onclick="openPractice()">📝 Practice</button>
-  <button onclick="exportContent()">💾 Export</button>
-  <button onclick="openSettings()">⚙️</button>
-  <button class="primary" onclick="addNewPage()">+ New</button>
-</div>
-
-<div class="sidebar">
-  <h3>Favorites</h3>
-  <div class="sidebar-item" onclick="showHome()"><span class="icon">🏠</span> Home</div>
-  <div class="sidebar-item"><span class="icon">⭐</span> Bookmarks</div>
-
-  <h3>📖 English</h3>
-  <div class="sidebar-item" onclick="openTopic('english', 'Synonyms & Antonyms')"><span class="icon">📚</span> Synonyms & Antonyms</div>
-  <div class="sidebar-item" onclick="openTopic('english', 'Tenses')"><span class="icon">⏰</span> Tenses</div>
-  <div class="sidebar-item" onclick="openTopic('english', 'Reading Comprehension')"><span class="icon">📖</span> Reading Comprehension</div>
-
-  <h3>🔢 Mathematics</h3>
-  <div class="sidebar-item" onclick="openTopic('math', 'Percentages')"><span class="icon">📊</span> Percentages</div>
-  <div class="sidebar-item" onclick="openTopic('math', 'Time & Work')"><span class="icon">⚙️</span> Time & Work</div>
-  <div class="sidebar-item" onclick="openTopic('math', 'Profit & Loss')"><span class="icon">💰</span> Profit & Loss</div>
-
-  <h3>🌍 General Awareness</h3>
-  <div class="sidebar-item" onclick="openTopic('ga', 'Indian Constitution')"><span class="icon">🇮🇳</span> Indian Constitution</div>
-  <div class="sidebar-item" onclick="openTopic('ga', 'Indian Geography')"><span class="icon">🗺️</span> Indian Geography</div>
-
-  <h3>🧩 Reasoning</h3>
-  <div class="sidebar-item" onclick="openTopic('reasoning', 'Blood Relations')"><span class="icon">👨‍👩‍👧</span> Blood Relations</div>
-  <div class="sidebar-item" onclick="openTopic('reasoning', 'Series & Patterns')"><span class="icon">🔢</span> Series & Patterns</div>
-
-  <h3>📋 Past Papers</h3>
-  <div id="papersList"></div>
-  <div class="sidebar-item" onclick="addPaperFromURL()" style="font-size:13px; color:#2383e2;"><span class="icon">🌐</span> Add from URL</div>
-  <div class="sidebar-item" onclick="addPaperFromPaste()" style="font-size:13px; color:#2383e2;"><span class="icon">📋</span> Add from paste</div>
-</div>
-
-<div class="page" id="page">
-  <!-- Home view -->
-  <div id="homeView">
-    <div class="cover">
-      <div class="cover-controls">
-        <button onclick="addNewPage()">+ Add a topic</button>
-        <button onclick="changeCover()">🎨 Change cover</button>
-      </div>
-    </div>
-    <div class="page-header">
-      <div class="page-icon" contenteditable="true">📚</div>
-      <input class="page-title" value="AFCAT One-Pager Notes" readonly>
-      <div class="page-meta">Your complete AFCAT study companion · 10 topics loaded</div>
-    </div>
-    <div class="content">
-      <div class="section-header">📖 English Topics</div>
-      <div class="topic-grid" id="englishGrid"></div>
-
-      <div class="section-header">🔢 Mathematics</div>
-      <div class="topic-grid" id="mathGrid"></div>
-
-      <div class="section-header">🌍 General Awareness</div>
-      <div class="topic-grid" id="gaGrid"></div>
-
-      <div class="section-header">🧩 Reasoning & Military Aptitude</div>
-      <div class="topic-grid" id="reasoningGrid"></div>
+<!-- Topbar -->
+<div class="navbar bg-base-100 shadow-sm sticky top-0 z-30 border-b border-base-300">
+  <div class="flex-1 flex items-center gap-3 px-2">
+    <button id="menuToggle" class="btn btn-ghost btn-sm md:hidden" onclick="toggleSidebar()">☰</button>
+    <div class="text-sm text-base-content/60">
+      <span class="font-semibold text-base-content">📚 AFCAT Prep</span>
+      <span class="mx-2 text-base-content/40">›</span>
+      <span id="currentSubject" class="font-medium">All Topics</span>
+      <span class="mx-2 text-base-content/40">›</span>
+      <span id="currentTopic" class="font-medium text-primary"></span>
     </div>
   </div>
-
-  <!-- Topic view -->
-  <div id="topicView" style="display:none;">
-    <div class="cover" id="topicCover">
-      <div class="cover-controls">
-        <button onclick="addBlockBelow()">+ Add block</button>
-        <button onclick="aiAssist()">✨ Ask AI</button>
-      </div>
-    </div>
-    <div class="page-header">
-      <div class="page-icon" id="topicIcon" contenteditable="true">📚</div>
-      <input class="page-title" id="topicTitle" value="Topic" readonly>
-      <div class="page-meta" id="topicMeta">Subject · 0 blocks</div>
-    </div>
-    <div class="content" id="blocksContainer"></div>
+  <div class="flex-none flex items-center gap-1 pr-2">
+    <button class="btn btn-ghost btn-sm" onclick="showHome()">🏠 <span class="hidden sm:inline">Home</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="openPractice()">📝 <span class="hidden sm:inline">Practice</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="exportContent()">💾 <span class="hidden sm:inline">Export</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️</button>
+    <button class="btn btn-primary btn-sm" onclick="addNewPage()">+ New</button>
   </div>
 </div>
 
-<!-- Settings Modal -->
-<div class="modal-backdrop" id="settingsModal">
-  <div class="modal">
-    <h2>⚙️ Settings</h2>
-    <label>Mistral API Key</label>
-    <input type="password" id="mistralKey" placeholder="Paste your Mistral API key here">
-    <p style="font-size:12px; color:#787774; margin-top:4px;">Stored only in your browser (localStorage). Get a key at <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a></p>
-    <label>Mistral Model</label>
-    <select id="mistralModel">
+<div class="flex">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar sidebar-scroll w-64 min-h-[calc(100vh-57px)] bg-base-200 border-r border-base-300 p-3 overflow-y-auto fixed md:sticky top-[57px] left-0 z-20">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold px-3">Menu</h3>
+    </div>
+    <div class="sidebar-item" onclick="showHome()"><span>🏠</span> Home</div>
+    <div class="sidebar-item" onclick="document.getElementById('topicTitle').scrollIntoView({behavior:'smooth'})"><span>⭐</span> Bookmarks</div>
+
+    <h3 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold px-3 mt-4 mb-1">📖 English</h3>
+    <div class="sidebar-item" onclick="openTopic('english', 'Synonyms & Antonyms')"><span>📚</span> Synonyms & Antonyms</div>
+    <div class="sidebar-item" onclick="openTopic('english', 'Tenses')"><span>⏰</span> Tenses</div>
+    <div class="sidebar-item" onclick="openTopic('english', 'Reading Comprehension')"><span>📖</span> Reading Comprehension</div>
+
+    <h3 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold px-3 mt-4 mb-1">🔢 Mathematics</h3>
+    <div class="sidebar-item" onclick="openTopic('math', 'Percentages')"><span>📊</span> Percentages</div>
+    <div class="sidebar-item" onclick="openTopic('math', 'Time & Work')"><span>⚙️</span> Time & Work</div>
+    <div class="sidebar-item" onclick="openTopic('math', 'Profit & Loss')"><span>💰</span> Profit & Loss</div>
+
+    <h3 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold px-3 mt-4 mb-1">🌍 General Awareness</h3>
+    <div class="sidebar-item" onclick="openTopic('ga', 'Indian Constitution')"><span>🇮🇳</span> Indian Constitution</div>
+    <div class="sidebar-item" onclick="openTopic('ga', 'Indian Geography')"><span>🗺️</span> Indian Geography</div>
+
+    <h3 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold px-3 mt-4 mb-1">🧩 Reasoning</h3>
+    <div class="sidebar-item" onclick="openTopic('reasoning', 'Blood Relations')"><span>👨‍👩‍👧</span> Blood Relations</div>
+    <div class="sidebar-item" onclick="openTopic('reasoning', 'Series & Patterns')"><span>🔢</span> Series & Patterns</div>
+
+    <h3 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold px-3 mt-4 mb-1">📋 Past Papers</h3>
+    <div id="papersList" class="px-1"></div>
+    <div class="sidebar-item text-primary" onclick="addPaperFromURL()"><span>🌐</span> Add from URL</div>
+    <div class="sidebar-item text-primary" onclick="addPaperFromPaste()"><span>📋</span> Add from paste</div>
+  </aside>
+
+  <style>
+    .sidebar-item { padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 10px; margin: 1px 0; transition: background 0.1s; }
+    .sidebar-item:hover { background: rgba(0,0,0,0.05); }
+    .sidebar-item.active { background: #dbeafe; color: #1e40af; font-weight: 600; }
+  </style>
+
+  <!-- Main page -->
+  <main class="flex-1 min-w-0 md:ml-0">
+    <!-- Home view -->
+    <div id="homeView">
+      <div class="cover h-48 sm:h-56 bg-gradient-to-br from-pink-500 via-orange-400 to-yellow-300 relative">
+        <div class="cover-controls absolute bottom-3 right-4 flex gap-2">
+          <button onclick="addNewPage()">+ Add a topic</button>
+          <button onclick="changeCover()">🎨 Change cover</button>
+        </div>
+      </div>
+      <div class="max-w-4xl mx-auto px-4 sm:px-12 pt-8">
+        <div class="text-6xl sm:text-7xl mb-2 cursor-pointer" contenteditable="true" onblur="this.dataset.icon=this.textContent">📚</div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-base-content mb-2">AFCAT One-Pager Notes</h1>
+        <p class="text-sm text-base-content/60">Your complete AFCAT study companion · 10 topics loaded</p>
+      </div>
+      <div class="max-w-6xl mx-auto px-4 sm:px-12 py-8">
+        <h2 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold mb-3">📖 English Topics</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8" id="englishGrid"></div>
+
+        <h2 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold mb-3">🔢 Mathematics</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8" id="mathGrid"></div>
+
+        <h2 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold mb-3">🌍 General Awareness</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8" id="gaGrid"></div>
+
+        <h2 class="text-xs uppercase tracking-wider text-base-content/50 font-semibold mb-3">🧩 Reasoning & Military Aptitude</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8" id="reasoningGrid"></div>
+      </div>
+    </div>
+
+    <!-- Topic view -->
+    <div id="topicView" class="hidden">
+      <div id="topicCover" class="cover h-40 sm:h-48 relative">
+        <div class="cover-controls absolute bottom-3 right-4 flex gap-2">
+          <button onclick="addBlockBelow()">+ Add block</button>
+          <button onclick="aiAssist()">✨ Ask AI</button>
+        </div>
+      </div>
+      <div class="max-w-4xl mx-auto px-4 sm:px-12 pt-8">
+        <div id="topicIcon" class="text-6xl sm:text-7xl mb-2 cursor-pointer" contenteditable="true">📚</div>
+        <input id="topicTitle" class="text-3xl sm:text-4xl font-bold text-base-content w-full bg-transparent border-0 focus:outline-none mb-2" value="Topic" readonly>
+        <div id="topicMeta" class="text-sm text-base-content/60">Subject · 0 blocks</div>
+      </div>
+      <div class="max-w-4xl mx-auto px-4 sm:px-12 py-6 pb-48" id="blocksContainer"></div>
+    </div>
+
+    <!-- Practice view -->
+    <div id="practiceView" class="hidden">
+      <div class="h-40 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative">
+        <div class="cover-controls absolute bottom-3 right-4 flex gap-2">
+          <button onclick="showHome()">← Home</button>
+        </div>
+      </div>
+      <div class="max-w-3xl mx-auto px-4 sm:px-12 py-10" id="practiceContent"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast stack -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Settings modal (DaisyUI) -->
+<dialog id="settingsModal" class="modal">
+  <div class="modal-box max-w-md">
+    <h3 class="font-bold text-lg mb-1">⚙️ Settings</h3>
+    <p class="text-xs text-base-content/60 mb-4">Configure your AI tutor. Key stored only in this browser.</p>
+    <label class="label"><span class="label-text">Mistral API Key</span></label>
+    <input type="password" id="mistralKey" placeholder="Paste your Mistral API key" class="input input-bordered w-full">
+    <p class="text-xs text-base-content/50 mt-1">Get one at <a href="https://console.mistral.ai/" target="_blank" class="link link-primary">console.mistral.ai</a></p>
+    <label class="label mt-3"><span class="label-text">Model</span></label>
+    <select id="mistralModel" class="select select-bordered w-full">
       <option value="mistral-small-latest">mistral-small-latest (recommended)</option>
       <option value="mistral-medium-latest">mistral-medium-latest</option>
-      <option value="open-mistral-7k">open-mistral-7k (faster, free tier)</option>
+      <option value="open-mistral-7b">open-mistral-7b (free tier)</option>
     </select>
-    <div class="modal-actions">
-      <button onclick="closeSettings()">Cancel</button>
-      <button onclick="testMistral()">Test</button>
-      <button class="primary" onclick="saveSettings()">Save</button>
+    <div id="settingsStatus" class="text-sm mt-3 min-h-[20px]"></div>
+    <div class="modal-action">
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-ghost" onclick="testMistral()">Test</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save</button>
     </div>
-    <div id="settingsStatus" style="margin-top:12px; font-size:13px;"></div>
   </div>
-</div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
 
-<!-- Practice View -->
-<div id="practiceView" style="display:none;">
-  <div class="cover" style="height:160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="cover-controls">
-      <button onclick="showHome()">← Home</button>
+<!-- AI assist modal -->
+<dialog id="aiModal" class="modal">
+  <div class="modal-box max-w-lg">
+    <h3 class="font-bold text-lg mb-1">✨ AI Assistant</h3>
+    <p class="text-xs text-base-content/60 mb-3">Ask AI to add content, examples, MCQs, or anything else.</p>
+    <textarea id="aiInput" class="textarea textarea-bordered w-full" rows="4" placeholder="e.g. 'Add 3 MCQs on present perfect tense with explanations'"></textarea>
+    <div id="aiStatus" class="text-sm mt-2 min-h-[20px]"></div>
+    <div class="modal-action">
+      <button class="btn btn-ghost" onclick="closeAiPanel()">Cancel</button>
+      <button class="btn btn-primary" id="aiGenerateBtn" onclick="generateAI()">Generate</button>
     </div>
   </div>
-  <div class="practice-container" id="practiceContent">
-    <!-- Set by JS -->
-  </div>
-</div>
-
-<!-- AI Panel -->
-<div class="ai-panel" id="aiPanel" style="display:none;">
-  <div class="ai-panel-header">
-    <span>✨</span> <span>AI Assistant</span>
-    <button class="secondary" style="margin-left:auto; padding:2px 8px;" onclick="closeAiPanel()">✕</button>
-  </div>
-  <div class="ai-panel-body">
-    <textarea id="aiInput" placeholder="Ask AI to add content, examples, MCQs, or anything else..."></textarea>
-    <div class="ai-panel-actions">
-      <button class="secondary" onclick="closeAiPanel()">Cancel</button>
-      <button onclick="generateAI()">Generate</button>
-    </div>
-  </div>
-</div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
 
 <script>
-// Notion-style data store
-let currentState = { topic: null, blocks: [] };
+// ===== State =====
+let currentState = { subject: null, topic: null, blocks: [] };
 let activeBlock = null;
 let saveTimeout = null;
 
-// Topic data
+// ===== Topics data =====
 const topicsData = {
   'english': {
     'Synonyms & Antonyms': {
@@ -937,82 +579,95 @@ const topicsData = {
   }
 };
 
-// Render home view
+// ===== Toast =====
+function toast(message, type = 'info', duration = 3000) {
+  const stack = document.getElementById('toastStack');
+  const colors = { success: 'alert-success', error: 'alert-error', warning: 'alert-warning', info: 'alert-info' };
+  const el = document.createElement('div');
+  el.className = `toast-item alert ${colors[type] || 'alert-info'} shadow-lg text-sm`;
+  el.innerHTML = `<span>${message}</span>`;
+  stack.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(100%)'; el.style.transition = 'all 0.2s'; setTimeout(() => el.remove(), 200); }, duration);
+}
+
+// ===== Sidebar toggle (mobile) =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== Home view =====
 function renderHome() {
-  document.getElementById('homeView').style.display = 'block';
-  document.getElementById('topicView').style.display = 'none';
+  document.getElementById('homeView').classList.remove('hidden');
+  document.getElementById('topicView').classList.add('hidden');
+  document.getElementById('practiceView').classList.add('hidden');
   document.getElementById('currentSubject').textContent = 'All Topics';
   document.getElementById('currentTopic').textContent = '';
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  renderTopicGrid('english', 'englishGrid');
+  renderTopicGrid('math', 'mathGrid');
+  renderTopicGrid('ga', 'gaGrid');
+  renderTopicGrid('reasoning', 'reasoningGrid');
+  renderPapersList();
+  document.getElementById('sidebar').classList.remove('open');
+}
 
-  // Render topic grids
-  for (const subject of ['english', 'math', 'ga', 'reasoning']) {
-    const grid = document.getElementById(subject + 'Grid');
-    grid.innerHTML = '';
-    for (const topic in topicsData[subject]) {
-      const data = topicsData[subject][topic];
-      const card = document.createElement('div');
-      card.className = 'topic-card';
-      card.onclick = () => openTopic(subject, topic);
-      card.innerHTML = `
-        <div class="icon">${data.icon}</div>
-        <div class="title">${topic}</div>
-        <div class="meta">${data.blocks.length} blocks</div>
-      `;
-      grid.appendChild(card);
-    }
+function renderTopicGrid(subject, elId) {
+  const grid = document.getElementById(elId);
+  grid.innerHTML = '';
+  for (const topic in topicsData[subject]) {
+    const data = topicsData[subject][topic];
+    const card = document.createElement('div');
+    card.className = 'card bg-base-100 shadow-sm hover:shadow-md border border-base-300 cursor-pointer transition-all hover:-translate-y-0.5';
+    card.onclick = () => openTopic(subject, topic);
+    card.innerHTML = `
+      <div class="card-body p-5">
+        <div class="text-3xl mb-1">${data.icon}</div>
+        <h3 class="font-semibold text-base">${topic}</h3>
+        <p class="text-xs text-base-content/60">${data.blocks.length} blocks</p>
+      </div>
+    `;
+    grid.appendChild(card);
   }
 }
 
-// Open topic
+function showHome() { renderHome(); }
+
+// ===== Topic view =====
 function openTopic(subject, topicName) {
   const data = topicsData[subject][topicName];
-  if (!data) return;
-
-  document.getElementById('homeView').style.display = 'none';
-  document.getElementById('topicView').style.display = 'block';
+  currentState = { subject, topic: topicName, blocks: JSON.parse(JSON.stringify(data.blocks)) };
+  document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('topicView').classList.remove('hidden');
+  document.getElementById('practiceView').classList.add('hidden');
+  document.getElementById('topicTitle').value = topicName;
+  document.getElementById('topicIcon').textContent = data.icon;
+  document.getElementById('topicMeta').textContent = `${capitalize(subject)} · ${currentState.blocks.length} blocks`;
+  const cover = document.getElementById('topicCover');
+  cover.style.background = data.cover;
   document.getElementById('currentSubject').textContent = capitalize(subject);
   document.getElementById('currentTopic').textContent = topicName;
-  document.getElementById('topicIcon').textContent = data.icon;
-  document.getElementById('topicTitle').value = topicName;
-  document.getElementById('topicCover').style.background = data.cover;
-  document.getElementById('topicMeta').textContent = `${capitalize(subject)} · ${data.blocks.length} blocks`;
-
-  // Update active sidebar
   document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-  event && event.currentTarget && event.currentTarget.classList.add('active');
-
-  currentState.topic = `${subject}::${topicName}`;
-  currentState.blocks = JSON.parse(JSON.stringify(data.blocks));
-
+  document.getElementById('sidebar').classList.remove('open');
   renderBlocks();
-  saveToStorage();
 }
 
-// Render blocks
 function renderBlocks() {
   const container = document.getElementById('blocksContainer');
   container.innerHTML = '';
-
-  currentState.blocks.forEach((block, index) => {
-    const blockEl = createBlockElement(block, index);
-    container.appendChild(blockEl);
-  });
-
-  // Add trailing add block
+  currentState.blocks.forEach((block, index) => container.appendChild(createBlockElement(block, index)));
   const addBlock = document.createElement('div');
   addBlock.className = 'add-block';
   addBlock.onclick = () => addBlockAt(currentState.blocks.length);
   addBlock.innerHTML = '<span class="add-block-icon">+</span> Click to add a block, or type / for commands';
   container.appendChild(addBlock);
+  setTimeout(() => { document.querySelectorAll('.block-content').forEach(el => renderMathInElement(el)); }, 50);
 }
 
-// Create block element
 function createBlockElement(block, index) {
   const div = document.createElement('div');
   div.className = 'block ' + block.type;
   div.dataset.index = index;
 
-  // Handle icon for callout
   if (block.type === 'callout' && block.icon) {
     const icon = document.createElement('span');
     icon.className = 'block-icon';
@@ -1020,58 +675,46 @@ function createBlockElement(block, index) {
     div.appendChild(icon);
   }
 
-  // Handle todo checkbox
   if (block.type === 'todo') {
     div.onclick = (e) => {
       if (e.target === div || e.target === div.querySelector('.block-content')) {
         div.classList.toggle('done');
         block.done = div.classList.contains('done');
-        saveToStorage();
+        autoSave();
       }
     };
   }
 
-  // Content
   const content = document.createElement('div');
   content.className = 'block-content';
   content.contentEditable = true;
   content.textContent = block.content || '';
   content.dataset.placeholder = getPlaceholder(block.type);
-  content.oninput = () => {
-    block.content = content.textContent;
-    autoSave();
-  };
+  content.oninput = () => { block.content = content.textContent; autoSave(); };
   content.onkeydown = (e) => handleKeydown(e, index, content);
   content.onfocus = () => activeBlock = index;
-
+  if (block.type === 'todo' && block.done) div.classList.add('done');
   div.appendChild(content);
 
-  // Handle
   const handle = document.createElement('div');
   handle.className = 'block-handle';
   handle.textContent = '⋮⋮';
   handle.draggable = true;
-  handle.ondragstart = (e) => {
-    e.dataTransfer.setData('text/plain', index);
-    div.style.opacity = '0.4';
-  };
+  handle.ondragstart = (e) => { e.dataTransfer.setData('text/plain', index); div.style.opacity = '0.4'; };
   handle.ondragend = () => div.style.opacity = '1';
-  div.ondragover = (e) => { e.preventDefault(); div.style.borderTop = '2px solid #2383e2'; };
+  div.ondragover = (e) => { e.preventDefault(); div.style.borderTop = '2px solid #1e40af'; };
   div.ondragleave = () => div.style.borderTop = '';
   div.ondrop = (e) => {
-    e.preventDefault();
-    div.style.borderTop = '';
+    e.preventDefault(); div.style.borderTop = '';
     const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
     if (fromIndex !== index) {
       const moved = currentState.blocks.splice(fromIndex, 1)[0];
       currentState.blocks.splice(index, 0, moved);
-      renderBlocks();
-      autoSave();
+      renderBlocks(); autoSave();
     }
   };
   div.appendChild(handle);
 
-  // Actions
   const actions = document.createElement('div');
   actions.className = 'block-actions';
   actions.innerHTML = `
@@ -1085,82 +728,41 @@ function createBlockElement(block, index) {
 }
 
 function getPlaceholder(type) {
-  const placeholders = {
-    'p': 'Type something, or press / for commands',
-    'h1': 'Heading 1',
-    'h2': 'Heading 2',
-    'h3': 'Heading 3',
-    'todo': 'To-do',
-    'callout': 'Callout',
-    'code': 'Code',
-    'quote': 'Empty quote'
-  };
-  return placeholders[type] || '';
+  return ({ 'p': 'Type something, or press / for commands', 'h1': 'Heading 1', 'h2': 'Heading 2', 'h3': 'Heading 3', 'todo': 'To-do', 'callout': 'Callout', 'code': 'Code', 'quote': 'Empty quote' })[type] || '';
 }
 
-// Block actions
 function addBlockAt(index, type = 'p', content = '') {
   currentState.blocks.splice(index, 0, { type, content });
   renderBlocks();
-  setTimeout(() => {
-    const el = document.querySelector(`[data-index="${index}"] .block-content`);
-    if (el) el.focus();
-  }, 50);
+  setTimeout(() => { const el = document.querySelector(`[data-index="${index}"] .block-content`); if (el) el.focus(); }, 50);
   autoSave();
 }
-
-function deleteBlock(index) {
-  currentState.blocks.splice(index, 1);
-  renderBlocks();
-  autoSave();
-}
-
-function duplicateBlock(index) {
-  const copy = JSON.parse(JSON.stringify(currentState.blocks[index]));
-  currentState.blocks.splice(index + 1, 0, copy);
-  renderBlocks();
-  autoSave();
-}
-
+function deleteBlock(index) { currentState.blocks.splice(index, 1); renderBlocks(); autoSave(); }
+function duplicateBlock(index) { const copy = JSON.parse(JSON.stringify(currentState.blocks[index])); currentState.blocks.splice(index + 1, 0, copy); renderBlocks(); autoSave(); }
 function changeBlockType(index) {
   const types = ['p', 'h1', 'h2', 'h3', 'todo', 'callout', 'code', 'quote', 'divider'];
-  const current = currentState.blocks[index].type;
-  const idx = types.indexOf(current);
-  const next = types[(idx + 1) % types.length];
+  const next = types[(types.indexOf(currentState.blocks[index].type) + 1) % types.length];
   currentState.blocks[index].type = next;
   if (next === 'divider') currentState.blocks[index].content = '';
-  renderBlocks();
-  autoSave();
+  renderBlocks(); autoSave();
 }
-
-function addBlockBelow() {
-  addBlockAt(currentState.blocks.length);
-}
+function addBlockBelow() { addBlockAt(currentState.blocks.length); }
 
 function handleKeydown(e, index, content) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    addBlockAt(index + 1);
-  } else if (e.key === 'Backspace' && content.textContent === '' && currentState.blocks.length > 1) {
-    e.preventDefault();
-    deleteBlock(index);
-    setTimeout(() => {
-      const el = document.querySelector(`[data-index="${index - 1}"] .block-content`);
-      if (el) el.focus();
-    }, 50);
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addBlockAt(index + 1); }
+  else if (e.key === 'Backspace' && content.textContent === '' && currentState.blocks.length > 1) {
+    e.preventDefault(); deleteBlock(index);
+    setTimeout(() => { const el = document.querySelector(`[data-index="${index - 1}"] .block-content`); if (el) el.focus(); }, 50);
   } else if (e.key === '/' && content.textContent === '') {
-    e.preventDefault();
-    showSlashMenu(content, index);
+    e.preventDefault(); showSlashMenu(content, index);
   }
 }
 
-// Slash menu (simplified)
 function showSlashMenu(content, index) {
   const menu = document.createElement('div');
   menu.className = 'slash-menu';
   menu.style.left = '20px';
   menu.style.top = '40px';
-
   const items = [
     { icon: 'Aa', label: 'Text', desc: 'Just a paragraph', type: 'p' },
     { icon: 'H1', label: 'Heading 1', desc: 'Big section heading', type: 'h1' },
@@ -1172,85 +774,46 @@ function showSlashMenu(content, index) {
     { icon: '"', label: 'Quote', desc: 'Quote someone', type: 'quote' },
     { icon: '—', label: 'Divider', desc: 'Visual separator', type: 'divider' }
   ];
-
   items.forEach(item => {
     const el = document.createElement('div');
     el.className = 'slash-menu-item';
-    el.innerHTML = `
-      <div class="icon">${item.icon}</div>
-      <div>
-        <div>${item.label}</div>
-        <div class="desc">${item.desc}</div>
-      </div>
-    `;
+    el.innerHTML = `<div class="icon">${item.icon}</div><div><div>${item.label}</div><div class="desc">${item.desc}</div></div>`;
     el.onclick = () => {
       currentState.blocks[index].type = item.type;
       currentState.blocks[index].content = item.type === 'divider' ? '' : currentState.blocks[index].content;
       if (item.type === 'callout') currentState.blocks[index].icon = '💡';
       renderBlocks();
-      setTimeout(() => {
-        const el = document.querySelector(`[data-index="${index}"] .block-content`);
-        if (el) el.focus();
-      }, 50);
+      setTimeout(() => { const el = document.querySelector(`[data-index="${index}"] .block-content`); if (el) el.focus(); }, 50);
       autoSave();
     };
     menu.appendChild(el);
   });
-
   content.parentElement.appendChild(menu);
-  setTimeout(() => {
-    document.addEventListener('click', function close() {
-      menu.remove();
-      document.removeEventListener('click', close);
-    }, { once: true });
-  }, 10);
+  setTimeout(() => { document.addEventListener('click', function close() { menu.remove(); document.removeEventListener('click', close); }, { once: true }); }, 10);
 }
 
-// AI panel
-function aiAssist() {
-  document.getElementById('aiPanel').style.display = 'block';
-  document.getElementById('aiInput').focus();
-}
-
-function closeAiPanel() {
-  document.getElementById('aiPanel').style.display = 'none';
-}
-
-function generateAI() {
-  const input = document.getElementById('aiInput').value.trim();
-  if (!input) return;
-
-  const newBlocks = [
-    { type: 'h2', content: '✨ AI Generated' },
-    { type: 'callout', icon: '🤖', content: 'AI response to: ' + input },
-    { type: 'p', content: 'This section was generated based on your prompt. In production, this connects to an AI API for real-time content generation.' },
-    { type: 'p', content: 'You can edit this content directly or use it as a starting point for your study notes.' }
-  ];
-
-  currentState.blocks.push(...newBlocks);
-  renderBlocks();
-  closeAiPanel();
-  autoSave();
-}
-
-// Other actions
-function showHome() { renderHome(); }
-function addNewPage() { showHome(); }
+// ===== Cover, export, new =====
+const COVERS = [
+  'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+  'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
+  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+  'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+  'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+  'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
+];
 function changeCover() {
-  const colors = [
-    'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
-    'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
-  ];
-  const cover = document.querySelector('.cover');
-  if (cover) cover.style.background = colors[Math.floor(Math.random() * colors.length)];
+  const cover = document.querySelector('#topicView .cover') || document.querySelector('.cover');
+  if (cover) {
+    cover.style.background = COVERS[Math.floor(Math.random() * COVERS.length)];
+    if (currentState.subject && currentState.topic) {
+      topicsData[currentState.subject][currentState.topic].cover = cover.style.background;
+      autoSave();
+    }
+  }
 }
-
+function addNewPage() { showHome(); toast('Tip: use the sidebar to navigate topics', 'info', 2000); }
 function exportContent() {
   let text = `AFCAT Notes: ${document.getElementById('currentTopic').textContent || 'All Topics'}\n\n`;
   currentState.blocks.forEach(b => {
@@ -1260,80 +823,64 @@ function exportContent() {
     else if (b.type === 'divider') text += '---\n\n';
     else if (b.content) text += b.content + '\n\n';
   });
-
   const blob = new Blob([text], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `afcat-notes-${Date.now()}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
+  a.href = url; a.download = `afcat-notes-${Date.now()}.txt`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('Notes exported', 'success');
 }
 
-// Storage
+// ===== Storage =====
 function saveToStorage() {
   try {
-    localStorage.setItem('afcat-notes', JSON.stringify(currentState));
-  } catch (e) {}
+    if (currentState.subject && currentState.topic) {
+      topicsData[currentState.subject][currentState.topic].blocks = currentState.blocks;
+    }
+    localStorage.setItem('afcat-topics', JSON.stringify(topicsData));
+  } catch (e) { console.error(e); }
 }
-
-function autoSave() {
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(saveToStorage, 500);
-}
-
+function autoSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveToStorage, 500); }
 function loadFromStorage() {
   try {
-    const saved = localStorage.getItem('afcat-notes');
+    const saved = localStorage.getItem('afcat-topics');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.topic && parsed.blocks) {
-        // Re-attach to topic
-        const [subject, name] = parsed.topic.split('::');
-        if (topicsData[subject] && topicsData[subject][name]) {
-          // Use saved blocks if they exist
-          if (parsed.blocks.length > 0) {
-            topicsData[subject][name].blocks = parsed.blocks;
-          }
-        }
-      }
+      Object.assign(topicsData, parsed);
     }
-  } catch (e) {}
+  } catch (e) { console.error(e); }
 }
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-// ===== Settings =====
+// ===== Settings (DaisyUI modal) =====
 function openSettings() {
   document.getElementById('mistralKey').value = localStorage.getItem('mistralKey') || '';
   document.getElementById('mistralModel').value = localStorage.getItem('mistralModel') || 'mistral-small-latest';
   document.getElementById('settingsStatus').textContent = '';
-  document.getElementById('settingsModal').classList.add('show');
+  document.getElementById('settingsModal').showModal();
 }
-function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+function closeSettings() { document.getElementById('settingsModal').close(); }
 function saveSettings() {
   localStorage.setItem('mistralKey', document.getElementById('mistralKey').value.trim());
   localStorage.setItem('mistralModel', document.getElementById('mistralModel').value);
-  document.getElementById('settingsStatus').innerHTML = '<span style="color:#2ecc71;">✓ Saved</span>';
+  document.getElementById('settingsStatus').innerHTML = '<span class="text-success font-semibold">✓ Saved</span>';
+  toast('Settings saved', 'success');
   setTimeout(closeSettings, 800);
 }
 async function testMistral() {
   const key = document.getElementById('mistralKey').value.trim();
-  if (!key) { document.getElementById('settingsStatus').innerHTML = '<span style="color:#e74c3c;">Enter a key first</span>'; return; }
-  document.getElementById('settingsStatus').textContent = 'Testing...';
+  const status = document.getElementById('settingsStatus');
+  if (!key) { status.innerHTML = '<span class="text-error">Enter a key first</span>'; return; }
+  status.innerHTML = '<span class="text-info">Testing...</span>';
   try {
     const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify({ model: 'mistral-small-latest', messages: [{ role: 'user', content: 'Reply with just: OK' }], max_tokens: 10 })
     });
-    if (res.ok) document.getElementById('settingsStatus').innerHTML = '<span style="color:#2ecc71;">✓ Key works</span>';
-    else document.getElementById('settingsStatus').innerHTML = '<span style="color:#e74c3c;">✗ ' + res.status + ' — check key</span>';
-  } catch (e) {
-    document.getElementById('settingsStatus').innerHTML = '<span style="color:#e74c3c;">✗ Network error: ' + e.message + '</span>';
-  }
+    if (res.ok) status.innerHTML = '<span class="text-success font-semibold">✓ Key works</span>';
+    else status.innerHTML = '<span class="text-error">✗ ' + res.status + ' — check key</span>';
+  } catch (e) { status.innerHTML = '<span class="text-error">✗ Network error</span>'; }
 }
 
 // ===== Mistral API =====
@@ -1354,26 +901,65 @@ async function callMistral(prompt, systemPrompt = '') {
   return data.choices[0].message.content;
 }
 
+// ===== AI Assist modal =====
+function aiAssist() { document.getElementById('aiInput').value = ''; document.getElementById('aiStatus').textContent = ''; document.getElementById('aiModal').showModal(); document.getElementById('aiInput').focus(); }
+function closeAiPanel() { document.getElementById('aiModal').close(); }
+
+async function generateAI() {
+  const input = document.getElementById('aiInput').value.trim();
+  if (!input) return;
+  const btn = document.getElementById('aiGenerateBtn');
+  const status = document.getElementById('aiStatus');
+  btn.disabled = true; btn.textContent = '⏳ Generating...';
+  status.innerHTML = '<span class="text-info">Asking Mistral...</span>';
+  try {
+    const sys = `You are an AFCAT exam prep tutor. Given the user's request, return study content as a list of blocks. Each block on its own line in this exact format: "TYPE|CONTENT" where TYPE is one of: h1, h2, h3, p, todo, callout, code, quote, divider. For callout, use "callout|💡|content". Keep total content under 1500 words. Do not include any other text.`;
+    const prompt = `Topic: ${currentState.topic}. Request: ${input}`;
+    const text = await callMistral(prompt, sys);
+    const blocks = parseAIBlocks(text);
+    if (!blocks.length) throw new Error('AI returned no blocks. Try rephrasing.');
+    currentState.blocks.push(...blocks);
+    renderBlocks();
+    saveToStorage();
+    closeAiPanel();
+    toast(`Added ${blocks.length} AI blocks`, 'success');
+  } catch (e) {
+    status.innerHTML = `<span class="text-error">✗ ${e.message}</span>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Generate';
+  }
+}
+
+function parseAIBlocks(text) {
+  const blocks = [];
+  for (const line of text.split('\n').map(l => l.trim()).filter(Boolean)) {
+    const m = line.match(/^(h1|h2|h3|p|todo|code|quote|divider)\|(.*)$/i);
+    if (!m) continue;
+    const type = m[1].toLowerCase();
+    const content = m[2];
+    if (type === 'callout') {
+      const parts = content.split('|', 2);
+      blocks.push({ type: 'callout', icon: parts[0] || '💡', content: parts[1] || '' });
+    } else {
+      blocks.push({ type, content });
+    }
+  }
+  return blocks;
+}
+
 // ===== Practice Mode =====
-let practiceState = {
-  source: 'topic',  // 'topic' | 'pasty' | 'ai'
-  questions: [],
-  currentIdx: 0,
-  answers: [],
-  startTime: null,
-  timerInterval: null
-};
+let practiceState = { source: 'topic', questions: [], currentIdx: 0, answers: [], startTime: null, timerInterval: null };
 
 const SAMPLE_QUESTIONS = {
   english: [
-    { q: "Synonym of 'CANDID':", opts: ["Secretive","Frank","Shy","Rude"], ans: 1, exp: "Candid means frank, honest, and open. It comes from Latin 'candidus' (white, pure)." },
+    { q: "Synonym of 'CANDID':", opts: ["Secretive","Frank","Shy","Rude"], ans: 1, exp: "Candid means frank, honest, and open." },
     { q: "She ___ to school daily.", opts: ["go","goes","going","went"], ans: 1, exp: "Present simple for habits. 3rd person singular takes 'goes'." },
-    { q: "Antonym of 'OPTIMISTIC':", opts: ["Hopeful","Positive","Pessimistic","Cheerful"], ans: 2, exp: "Optimistic expects good outcomes; Pessimistic expects bad." }
+    { q: "Antonym of 'OPTIMISTIC':", opts: ["Hopeful","Positive","Pessimistic","Cheerful"], ans: 2, exp: "Optimist expects good; pessimist expects bad." }
   ],
   math: [
-    { q: "20% of 500 =", opts: ["50","100","150","200"], ans: 1, exp: "20% = 20/100 = 1/5. 1/5 of 500 = 100." },
-    { q: "If price ↑20%, by what % must consumption ↓ to keep expense same?", opts: ["20%","16.67%","25%","10%"], ans: 1, exp: "100×1.2 = 120. New consumption = 100/120 = 0.8333. Decrease = 1 - 0.8333 = 0.1667 = 16.67%." },
-    { q: "SP=1200, Profit=20%. Find CP.", opts: ["1000","960","1440","1100"], ans: 0, exp: "SP = CP × 1.2 → CP = 1200/1.2 = 1000." }
+    { q: "20% of 500 =", opts: ["50","100","150","200"], ans: 1, exp: "20% = 1/5. 1/5 of 500 = 100." },
+    { q: "If price ↑20%, by what % must consumption ↓ to keep expense same?", opts: ["20%","16.67%","25%","10%"], ans: 1, exp: "100×1.2 = 120. Decrease = 1 - 100/120 = 16.67%." },
+    { q: "SP=1200, Profit=20%. Find CP.", opts: ["1000","960","1440","1100"], ans: 0, exp: "CP = 1200/1.2 = 1000." }
   ],
   ga: [
     { q: "Fundamental Rights are in which Part?", opts: ["Part II","Part III","Part IV","Part V"], ans: 1, exp: "Part III (Articles 12-35) contains Fundamental Rights." },
@@ -1382,143 +968,142 @@ const SAMPLE_QUESTIONS = {
   ],
   reasoning: [
     { q: "Woman says 'He is my mother's only son's son'. Relation?", opts: ["Son","Nephew","Cousin","Brother"], ans: 1, exp: "Mother's only son = woman's brother. Brother's son = Nephew." },
-    { q: "Next in 3, 6, 11, 18, ?", opts: ["25","27","29","31"], ans: 1, exp: "Differences: 3, 5, 7, 9 (odd numbers). Next = 18+9 = 27." },
+    { q: "Next in 3, 6, 11, 18, ?", opts: ["25","27","29","31"], ans: 1, exp: "Differences: 3, 5, 7, 9. Next = 18+9 = 27." },
     { q: "Next letter: A, D, G, J, ?", opts: ["L","M","N","O"], ans: 1, exp: "+3 each step. A→D→G→J→M." }
   ]
 };
 
 function openPractice() {
-  document.getElementById('homeView').style.display = 'none';
-  document.getElementById('topicView').style.display = 'none';
-  document.getElementById('practiceView').style.display = 'block';
+  document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('topicView').classList.add('hidden');
+  document.getElementById('practiceView').classList.remove('hidden');
   document.getElementById('currentSubject').textContent = 'Practice';
   document.getElementById('currentTopic').textContent = '';
+  document.getElementById('sidebar').classList.remove('open');
   renderPracticeSetup();
 }
 
 function renderPracticeSetup() {
   const c = document.getElementById('practiceContent');
+  const papers = getPapers();
+  const sourceBtn = (src, label, icon) => `<button class="btn btn-sm ${practiceState.source === src ? 'btn-primary' : 'btn-outline'}" onclick="setPracticeSource('${src}')">${icon} ${label}</button>`;
   c.innerHTML = `
-    <div class="practice-header">
-      <h1>📝 Practice Mode</h1>
-      <div class="practice-meta">One question at a time. Answer, see explanation, move on.</div>
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold mb-1">📝 Practice Mode</h1>
+      <p class="text-sm text-base-content/60">One question at a time. Answer, see explanation, move on.</p>
     </div>
-
-    <h3 style="margin-top:24px;">Choose source:</h3>
-    <div class="source-picker">
-      <button class="${practiceState.source==='topic'?'active':''}" onclick="setPracticeSource('topic')">📚 Topic Practice</button>
-      <button class="${practiceState.source==='pasty'?'active':''}" onclick="setPracticeSource('pasty')">📄 Paste Past Paper</button>
-      <button class="${practiceState.source==='ai'?'active':''}" onclick="setPracticeSource('ai')">🤖 AI Generate</button>
+    <h3 class="font-semibold mb-2">Choose source:</h3>
+    <div class="flex flex-wrap gap-2 mb-6">
+      ${sourceBtn('topic', 'Topic', '📚')}
+      ${sourceBtn('pasty', 'Paste', '📄')}
+      ${sourceBtn('ai', 'AI Generate', '🤖')}
+      ${papers.length ? sourceBtn('papers', 'Past Papers', '📋') : ''}
     </div>
-
     <div id="sourceOptions"></div>
 
-    <h3 style="margin-top:32px;">📖 How to do Past Papers (Workflow)</h3>
-    <div class="workflow-step">
-      <h4>Step 1: Setup</h4>
-      <p>Get a real AFCAT past paper (PDF). Don't open it yet. Set a 2-hour timer (120 min for 100 questions).</p>
+    <h3 class="font-semibold mt-10 mb-3">📖 How to do Past Papers (Workflow)</h3>
+    <div class="space-y-3">
+      <div class="border-l-4 border-primary bg-primary/5 p-4 rounded-r">
+        <h4 class="font-semibold text-sm">Step 1: Setup</h4>
+        <p class="text-xs text-base-content/70 mt-1">Get a real AFCAT past paper (PDF). Set a 2-hour timer (120 min for 100 questions).</p>
+      </div>
+      <div class="border-l-4 border-primary bg-primary/5 p-4 rounded-r">
+        <h4 class="font-semibold text-sm">Step 2: First pass — speed (60 min)</h4>
+        <p class="text-xs text-base-content/70 mt-1">Answer what you know. Skip hard ones. Mark them with a star. Don't look at answers.</p>
+      </div>
+      <div class="border-l-4 border-primary bg-primary/5 p-4 rounded-r">
+        <h4 class="font-semibold text-sm">Step 3: Second pass — careful (60 min)</h4>
+        <p class="text-xs text-base-content/70 mt-1">Use remaining time on starred questions. Still no peeking.</p>
+      </div>
+      <div class="border-l-4 border-primary bg-primary/5 p-4 rounded-r">
+        <h4 class="font-semibold text-sm">Step 4: Check + learn</h4>
+        <p class="text-xs text-base-content/70 mt-1">For every wrong answer: read explanation, note the rule you missed, write it in your notes.</p>
+      </div>
+      <div class="border-l-4 border-primary bg-primary/5 p-4 rounded-r">
+        <h4 class="font-semibold text-sm">Step 5: Re-attempt after 3 days</h4>
+        <p class="text-xs text-base-content/70 mt-1">Same paper again 3 days later. Your score should jump 15-20 points. Only way to retain.</p>
+      </div>
     </div>
-    <div class="workflow-step">
-      <h4>Step 2: First pass — speed</h4>
-      <p>Answer what you know in 60 min. Skip hard ones. Mark them with a star. Don't look at answers yet.</p>
-    </div>
-    <div class="workflow-step">
-      <h4>Step 3: Second pass — careful</h4>
-      <p>Use remaining 60 min for starred questions. Still no peeking at answers.</p>
-    </div>
-    <div class="workflow-step">
-      <h4>Step 4: Check + learn</h4>
-      <p>Now check answers. For every wrong one: read the explanation, note the rule you missed, write it down in this app.</p>
-    </div>
-    <div class="workflow-step">
-      <h4>Step 5: Re-attempt after 3 days</h4>
-      <p>Do the same paper again 3 days later. Your score should jump 15-20 points. This is the only way to retain.</p>
-    </div>
-
-    <div style="margin-top:24px; padding:16px; background:#fff3cd; border-radius:6px; font-size:13px;">
-      💡 <b>Honest note:</b> I don't have AFCAT past papers built in. Option 1 (Topic) uses my questions. Option 2 lets you paste any paper. Option 3 has Mistral generate realistic ones (not real past papers).
+    <div class="alert alert-warning mt-6 text-sm">
+      💡 <b>Honest note:</b> Built-in questions are samples, not real AFCAT papers. Bring real papers via paste or URL.
     </div>
   `;
   renderSourceOptions();
 }
 
-function setPracticeSource(src) {
-  practiceState.source = src;
-  practiceState.questions = [];
-  renderPracticeSetup();
-}
+function setPracticeSource(src) { practiceState.source = src; practiceState.questions = []; renderPracticeSetup(); }
 
 function renderSourceOptions() {
   const el = document.getElementById('sourceOptions');
   if (practiceState.source === 'topic') {
     el.innerHTML = `
-      <label style="display:block; margin:16px 0 8px; font-size:13px; color:#787774;">Subject</label>
-      <select id="practiceSubj" onchange="updatePracticeTopics()" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
-        <option value="english">English</option>
-        <option value="math">Mathematics</option>
-        <option value="ga">General Awareness</option>
-        <option value="reasoning">Reasoning</option>
+      <label class="label"><span class="label-text">Subject</span></label>
+      <select id="practiceSubj" class="select select-bordered w-full max-w-xs">
+        <option value="english">English</option><option value="math">Mathematics</option>
+        <option value="ga">General Awareness</option><option value="reasoning">Reasoning</option>
       </select>
-      <label style="display:block; margin:12px 0 8px; font-size:13px; color:#787774;">Topic</label>
-      <select id="practiceTopic" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
-        ${Object.keys(SAMPLE_QUESTIONS.english).length ? '' : ''}
-      </select>
-      <p style="font-size:13px; color:#787774; margin-top:8px;">Uses the built-in sample questions for this topic.</p>
-      <button class="primary" style="margin-top:16px; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;" onclick="startTopicPractice()">Start Practice →</button>
+      <p class="text-xs text-base-content/60 mt-2">Uses the built-in sample questions for this subject.</p>
+      <button class="btn btn-primary mt-3" onclick="startTopicPractice()">Start Practice →</button>
     `;
   } else if (practiceState.source === 'pasty') {
     el.innerHTML = `
-      <label style="display:block; margin:16px 0 8px; font-size:13px; color:#787774;">Paste past paper questions (one per line, format below)</label>
-      <textarea id="pastyInput" rows="10" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px; font-family:monospace; font-size:12px;" placeholder="Q: Question text here
+      <label class="label"><span class="label-text">Paste past paper questions</span></label>
+      <div class="text-xs text-base-content/60 mb-2">Format — one blank line between questions:</div>
+      <pre class="bg-base-300 p-3 rounded text-xs font-mono mb-2">Q: Question text
 A) Option 1
 B) Option 2
 C) Option 3
 D) Option 4
-ANS: A
-EXP: Brief explanation
-
-Q: Next question
-A) ...
-B) ...
 ANS: B
-EXP: ..."></textarea>
-      <button class="primary" style="margin-top:12px; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;" onclick="startPastyPractice()">Parse & Start →</button>
+EXP: Why B is correct</pre>
+      <textarea id="pastyInput" rows="8" class="textarea textarea-bordered w-full font-mono text-xs" placeholder="Paste here..."></textarea>
+      <button class="btn btn-primary mt-3" onclick="startPastyPractice()">Parse & Start →</button>
     `;
   } else if (practiceState.source === 'ai') {
     el.innerHTML = `
-      <label style="display:block; margin:16px 0 8px; font-size:13px; color:#787774;">Topic for AI to generate questions on</label>
-      <input type="text" id="aiTopic" placeholder="e.g., Tenses, Percentages, Indian Constitution" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
-      <label style="display:block; margin:12px 0 8px; font-size:13px; color:#787774;">How many questions?</label>
-      <input type="number" id="aiCount" value="5" min="1" max="20" style="width:100%; padding:8px; border:1px solid #ebebeb; border-radius:4px;">
-      <button class="primary" style="margin-top:12px; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;" onclick="startAIPractice()">🤖 Generate with Mistral →</button>
-      <p style="font-size:12px; color:#e8590c; margin-top:8px;">⚠️ AI-generated questions are NOT real AFCAT past papers. Use for practice, not as authentic paper.</p>
+      <label class="label"><span class="label-text">Topic for AI</span></label>
+      <input type="text" id="aiTopic" class="input input-bordered w-full" placeholder="e.g., Tenses, Percentages, Indian Constitution">
+      <label class="label mt-3"><span class="label-text">How many questions?</span></label>
+      <input type="number" id="aiCount" value="5" min="1" max="20" class="input input-bordered w-full max-w-xs">
+      <button class="btn btn-primary mt-3" onclick="startAIPractice()">🤖 Generate with Mistral →</button>
+      <p class="text-xs text-warning mt-2">⚠️ AI-generated questions are NOT real AFCAT past papers.</p>
+    `;
+  } else if (practiceState.source === 'papers') {
+    const papers = getPapers();
+    el.innerHTML = `
+      <p class="text-sm text-base-content/60 mb-3">Pick a paper (${papers.length} saved):</p>
+      <div class="space-y-2">
+        ${papers.map(p => `
+          <button class="card bg-base-100 border border-base-300 hover:border-primary hover:shadow-md w-full text-left transition-all" onclick="startPaperPractice('${p.id}')">
+            <div class="card-body p-4">
+              <div class="font-semibold">📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
+              <div class="text-xs text-base-content/60">${p.questions.length} Qs · ${p.source || 'no source'}</div>
+            </div>
+          </button>
+        `).join('') || '<p class="text-sm text-base-content/60">No papers yet. Add one from the sidebar →</p>'}
+      </div>
     `;
   }
-}
-
-function updatePracticeTopics() {
-  // Not used — sample questions are per-subject
 }
 
 function startTopicPractice() {
   const subj = document.getElementById('practiceSubj').value;
   practiceState.questions = SAMPLE_QUESTIONS[subj] || [];
-  if (!practiceState.questions.length) { alert('No questions loaded for this subject.'); return; }
+  if (!practiceState.questions.length) { toast('No questions loaded for this subject', 'warning'); return; }
   startPracticeSession();
 }
 
 function startPastyPractice() {
   const text = document.getElementById('pastyInput').value.trim();
-  if (!text) { alert('Paste some questions first.'); return; }
+  if (!text) { toast('Paste some questions first', 'warning'); return; }
   try {
     practiceState.questions = parsePastyPaper(text);
     if (!practiceState.questions.length) throw new Error('No questions parsed. Check format.');
     startPracticeSession();
-  } catch (e) { alert('Parse error: ' + e.message); }
+  } catch (e) { toast('Parse error: ' + e.message, 'error'); }
 }
 
 function parsePastyPaper(text) {
-  // Format: Q: ... \n A) ... \n B) ... \n C) ... \n D) ... \n ANS: A \n EXP: ...
   const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
   const questions = [];
   for (const block of blocks) {
@@ -1540,9 +1125,10 @@ function parsePastyPaper(text) {
 async function startAIPractice() {
   const topic = document.getElementById('aiTopic').value.trim();
   const count = parseInt(document.getElementById('aiCount').value) || 5;
-  if (!topic) { alert('Enter a topic.'); return; }
-  if (!localStorage.getItem('mistralKey')) { alert('Add your Mistral API key in Settings (⚙️) first.'); return; }
+  if (!topic) { toast('Enter a topic', 'warning'); return; }
+  if (!localStorage.getItem('mistralKey')) { toast('Add your Mistral API key in Settings (⚙️) first', 'warning'); return; }
   const btn = event.target;
+  const origText = btn.textContent;
   btn.textContent = '⏳ Generating...'; btn.disabled = true;
   try {
     const prompt = `Generate ${count} AFCAT-style MCQ questions on "${topic}". For each: clear question, 4 options A/B/C/D, indicate correct answer, brief explanation. Format strictly as:\n\nQ: [question]\nA) [opt1]\nB) [opt2]\nC) [opt3]\nD) [opt4]\nANS: [letter]\nEXP: [one-line explanation]\n\n(blank line between questions)`;
@@ -1550,11 +1136,8 @@ async function startAIPractice() {
     practiceState.questions = parsePastyPaper(text);
     if (!practiceState.questions.length) throw new Error('AI returned no parseable questions. Try again.');
     startPracticeSession();
-  } catch (e) {
-    alert('AI error: ' + e.message);
-  } finally {
-    btn.textContent = '🤖 Generate with Mistral →'; btn.disabled = false;
-  }
+  } catch (e) { toast('AI error: ' + e.message, 'error'); }
+  finally { btn.textContent = origText; btn.disabled = false; }
 }
 
 function startPracticeSession() {
@@ -1568,28 +1151,30 @@ function renderQuestion() {
   const q = practiceState.questions[practiceState.currentIdx];
   const total = practiceState.questions.length;
   const c = document.getElementById('practiceContent');
+  const pct = (practiceState.currentIdx / total) * 100;
   c.innerHTML = `
-    <div class="practice-header">
-      <h1>📝 Question ${practiceState.currentIdx + 1} of ${total}</h1>
-      <div class="practice-meta">
-        <span class="timer" id="timer">⏱️ 00:00</span>
-        · Score so far: <b>${score()}</b>/${practiceState.currentIdx}
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold mb-1">📝 Question ${practiceState.currentIdx + 1} of ${total}</h1>
+      <div class="text-sm text-base-content/60">
+        <span id="timer" class="font-mono">⏱️ 00:00</span>
+        · Score: <b>${score()}</b>/${practiceState.currentIdx}
       </div>
     </div>
-    <div class="progress-bar"><div class="progress-bar-fill" style="width:${(practiceState.currentIdx / total) * 100}%"></div></div>
+    <progress class="progress progress-primary w-full" value="${pct}" max="100"></progress>
 
-    <div class="question-card">
-      <div class="question-text" id="qtext"></div>
-      <div class="options-list" id="opts"></div>
-      <div class="explanation" id="exp"></div>
-      <div class="practice-actions">
-        <button class="primary" id="submitBtn" onclick="submitAnswer()">Submit</button>
-        <button id="nextBtn" style="display:none;" onclick="nextQuestion()">${practiceState.currentIdx === total - 1 ? 'See Score' : 'Next →'}</button>
-        <button onclick="addToNotes()">📝 Add to my notes</button>
+    <div class="card bg-base-100 shadow-md border border-base-300 mt-4">
+      <div class="card-body">
+        <div id="qtext" class="text-base leading-relaxed mb-4 whitespace-pre-wrap"></div>
+        <div id="opts" class="flex flex-col gap-2"></div>
+        <div id="exp" class="hidden mt-4 p-4 bg-info/10 border-l-4 border-info rounded-r text-sm"></div>
+        <div class="flex gap-2 mt-4 flex-wrap">
+          <button id="submitBtn" class="btn btn-primary" onclick="submitAnswer()">Submit</button>
+          <button id="nextBtn" class="btn btn-primary hidden" onclick="nextQuestion()">${practiceState.currentIdx === total - 1 ? 'See Score' : 'Next →'}</button>
+          <button class="btn btn-ghost" onclick="addToNotes()">📝 Add to notes</button>
+        </div>
       </div>
     </div>
   `;
-  // Render with KaTeX
   const qtextEl = document.getElementById('qtext');
   qtextEl.textContent = q.q;
   renderMathInElement(qtextEl);
@@ -1597,55 +1182,45 @@ function renderQuestion() {
   const optsEl = document.getElementById('opts');
   q.opts.forEach((opt, i) => {
     const div = document.createElement('div');
-    div.className = 'option';
+    div.className = 'opt-card';
     div.dataset.idx = i;
     div.textContent = String.fromCharCode(65 + i) + ') ' + opt;
     div.onclick = () => {
-      document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      document.querySelectorAll('.opt-card').forEach(o => o.classList.remove('selected'));
       div.classList.add('selected');
     };
     optsEl.appendChild(div);
   });
   renderMathInElement(optsEl);
-
   startTimer();
 }
 
 function submitAnswer() {
-  const selected = document.querySelector('.option.selected');
-  if (!selected) { alert('Select an option first.'); return; }
+  const selected = document.querySelector('.opt-card.selected');
+  if (!selected) { toast('Select an option first', 'warning'); return; }
   const idx = parseInt(selected.dataset.idx);
   const q = practiceState.questions[practiceState.currentIdx];
   practiceState.answers[practiceState.currentIdx] = idx;
-
-  // Reveal
-  document.querySelectorAll('.option').forEach((o, i) => {
+  document.querySelectorAll('.opt-card').forEach((o, i) => {
     o.onclick = null;
     if (i === q.ans) o.classList.add('correct');
     else if (i === idx) o.classList.add('wrong');
   });
   const expEl = document.getElementById('exp');
   expEl.textContent = '💡 ' + (q.exp || 'No explanation.');
-  expEl.classList.add('show');
+  expEl.classList.remove('hidden');
   renderMathInElement(expEl);
-
-  document.getElementById('submitBtn').style.display = 'none';
-  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('submitBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
   stopTimer();
 }
 
 function nextQuestion() {
-  if (practiceState.currentIdx === practiceState.questions.length - 1) {
-    showScore();
-  } else {
-    practiceState.currentIdx++;
-    renderQuestion();
-  }
+  if (practiceState.currentIdx === practiceState.questions.length - 1) showScore();
+  else { practiceState.currentIdx++; renderQuestion(); }
 }
 
-function score() {
-  return practiceState.answers.filter((a, i) => a !== null && a === practiceState.questions[i].ans).length;
-}
+function score() { return practiceState.answers.filter((a, i) => a !== null && a === practiceState.questions[i].ans).length; }
 
 function showScore() {
   stopTimer();
@@ -1657,37 +1232,39 @@ function showScore() {
   const secs = elapsed % 60;
   const c = document.getElementById('practiceContent');
   c.innerHTML = `
-    <div class="score-summary">
-      <h1>🎉 Practice Complete!</h1>
-      <div class="score-big">${s}/${total}</div>
-      <div class="score-label">${pct}% accuracy · ${mins}m ${secs}s</div>
-      <div style="margin:24px 0;">
-        <button class="primary" style="padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin:4px;" onclick="reviewAnswers()">📋 Review Answers</button>
-        <button style="padding:10px 20px; background:white; border:1px solid #ebebeb; border-radius:4px; cursor:pointer; font-size:14px; margin:4px;" onclick="openPractice()">🔄 New Practice</button>
-        <button style="padding:10px 20px; background:white; border:1px solid #ebebeb; border-radius:4px; cursor:pointer; font-size:14px; margin:4px;" onclick="showHome()">🏠 Home</button>
+    <div class="text-center py-8">
+      <h1 class="text-3xl font-bold mb-4">🎉 Practice Complete!</h1>
+      <div class="text-7xl font-extrabold text-primary mb-2">${s}/${total}</div>
+      <div class="text-base text-base-content/60 mb-6">${pct}% accuracy · ${mins}m ${secs}s</div>
+      <div class="flex flex-wrap gap-2 justify-center">
+        <button class="btn btn-primary" onclick="reviewAnswers()">📋 Review Answers</button>
+        <button class="btn btn-ghost" onclick="openPractice()">🔄 New Practice</button>
+        <button class="btn btn-ghost" onclick="showHome()">🏠 Home</button>
       </div>
-      <p style="font-size:13px; color:#787774; margin-top:20px;">
-        💡 <b>What to do now:</b> For each wrong answer, write the rule in your notes. Re-attempt this set in 3 days.
-      </p>
+      <div class="alert alert-info mt-8 text-sm max-w-md mx-auto">
+        💡 <b>What to do now:</b> For each wrong answer, write the rule in your notes. Re-attempt in 3 days.
+      </div>
     </div>
   `;
 }
 
 function reviewAnswers() {
   const c = document.getElementById('practiceContent');
-  c.innerHTML = '<h2>📋 Review</h2>' + practiceState.questions.map((q, i) => {
+  c.innerHTML = '<h2 class="text-2xl font-bold mb-4">📋 Review</h2>' + practiceState.questions.map((q, i) => {
     const a = practiceState.answers[i];
     const correct = a === q.ans;
     return `
-      <div class="question-card">
-        <div class="question-text"><b>Q${i+1}.</b> ${q.q}</div>
-        <div style="font-size:14px; margin:8px 0;">
-          ${q.opts.map((o, j) => `<div class="option ${j === q.ans ? 'correct' : (j === a && !correct ? 'wrong' : '')}">${String.fromCharCode(65+j)}) ${o}</div>`).join('')}
+      <div class="card bg-base-100 border border-base-300 mb-4">
+        <div class="card-body">
+          <div class="font-semibold">Q${i+1}. ${q.q}</div>
+          <div class="mt-3 space-y-1.5">
+            ${q.opts.map((o, j) => `<div class="opt-card ${j === q.ans ? 'correct' : (j === a && !correct ? 'wrong' : '')}">${String.fromCharCode(65+j)}) ${o}</div>`).join('')}
+          </div>
+          <div class="mt-3 p-3 bg-info/10 border-l-4 border-info rounded-r text-sm">${correct ? '✅' : '❌'} ${q.exp || ''}</div>
         </div>
-        <div class="explanation show" style="display:block;">${correct ? '✅' : '❌'} ${q.exp || ''}</div>
       </div>
     `;
-  }).join('') + '<button style="margin:20px 0; padding:10px 20px; background:#2383e2; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="showHome()">🏠 Home</button>';
+  }).join('') + '<button class="btn btn-primary mt-6" onclick="showHome()">🏠 Home</button>';
   renderMathInElement(c);
 }
 
@@ -1695,12 +1272,12 @@ function addToNotes() {
   const q = practiceState.questions[practiceState.currentIdx];
   const correct = practiceState.answers[practiceState.currentIdx] === q.ans;
   const note = `**Q: ${q.q}**\nMy answer: ${q.opts[practiceState.answers[practiceState.currentIdx]] || '(skipped)'}\nCorrect: ${q.opts[q.ans]}\n${correct ? '✅' : '❌'} ${q.exp || ''}`;
-  // Append to a "Practice Notes" topic
   if (!topicsData.english['Practice Notes']) {
     topicsData.english['Practice Notes'] = { icon: '📝', cover: 'linear-gradient(135deg, #f39c12 0%, #e74c3c 100%)', blocks: [] };
   }
   topicsData.english['Practice Notes'].blocks.push({ type: 'p', content: note });
-  alert('Added to "Practice Notes" topic (English sidebar).');
+  saveToStorage();
+  toast('Added to "Practice Notes" topic', 'success');
 }
 
 function startTimer() {
@@ -1712,7 +1289,7 @@ function startTimer() {
     const t = document.getElementById('timer');
     if (t) {
       t.textContent = `⏱️ ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-      if (elapsed > 120) t.classList.add('warn');
+      t.className = elapsed > 120 ? 'font-mono text-error font-bold' : 'font-mono';
     }
   }, 1000);
 }
@@ -1725,15 +1302,6 @@ function renderMathInElement(el) {
   }
 }
 
-// Hook into existing renderBlocks to render math after each render
-const _origRenderBlocks = renderBlocks;
-renderBlocks = function() {
-  _origRenderBlocks();
-  setTimeout(() => {
-    document.querySelectorAll('.block-content').forEach(el => renderMathInElement(el));
-  }, 50);
-};
-
 // ===== Past Papers =====
 const CORS_PROXIES = [
   'https://api.allorigins.win/raw?url=',
@@ -1741,28 +1309,23 @@ const CORS_PROXIES = [
   'https://api.codetabs.com/v1/proxy/?quest='
 ];
 
-function getPapers() {
-  return JSON.parse(localStorage.getItem('pastPapers') || '[]');
-}
+function getPapers() { return JSON.parse(localStorage.getItem('pastPapers') || '[]'); }
 function savePaper(paper) {
   const papers = getPapers();
-  // dedupe by id
   const idx = papers.findIndex(p => p.id === paper.id);
   if (idx >= 0) papers[idx] = paper; else papers.push(paper);
   localStorage.setItem('pastPapers', JSON.stringify(papers));
   renderPapersList();
 }
 function deletePaper(id) {
-  if (!confirm('Delete this paper?')) return;
   const papers = getPapers().filter(p => p.id !== id);
   localStorage.setItem('pastPapers', JSON.stringify(papers));
   renderPapersList();
+  toast('Paper deleted', 'info');
 }
 
 async function loadBundledPapers() {
-  // Seed localStorage from pastpapers.json on first visit
-  const seeded = localStorage.getItem('pastPapersSeeded');
-  if (seeded) return;
+  if (localStorage.getItem('pastPapersSeeded')) return;
   try {
     const res = await fetch('./pastpapers.json');
     if (!res.ok) return;
@@ -1777,7 +1340,7 @@ async function loadBundledPapers() {
       if (added) localStorage.setItem('pastPapers', JSON.stringify(existing));
     }
     localStorage.setItem('pastPapersSeeded', '1');
-  } catch (e) { /* offline or 404 — fine */ }
+  } catch (e) {}
 }
 
 function renderPapersList() {
@@ -1785,16 +1348,16 @@ function renderPapersList() {
   if (!el) return;
   const papers = getPapers();
   if (!papers.length) {
-    el.innerHTML = '<div style="font-size:12px; color:#9b9a97; padding:6px 8px;">No papers yet. Paste a paper or fetch from URL →</div>';
+    el.innerHTML = '<div class="text-xs text-base-content/50 px-3 py-2">No papers yet. Add one →</div>';
     return;
   }
   el.innerHTML = papers.map(p => `
-    <div class="paper-item" onclick="startPaperPractice('${p.id}')">
-      <div>
-        <div>📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
-        <div class="paper-meta">${p.questions.length} Qs</div>
+    <div class="flex items-center justify-between p-2 hover:bg-base-300 rounded cursor-pointer group" onclick="startPaperPractice('${p.id}')">
+      <div class="min-w-0 flex-1">
+        <div class="text-sm truncate">📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
+        <div class="text-xs text-base-content/50">${p.questions.length} Qs</div>
       </div>
-      <span class="paper-del" onclick="event.stopPropagation(); deletePaper('${p.id}')" title="Delete">✕</span>
+      <button class="opacity-0 group-hover:opacity-100 text-error btn btn-ghost btn-xs" onclick="event.stopPropagation(); deletePaper('${p.id}')" title="Delete">✕</button>
     </div>
   `).join('');
 }
@@ -1806,12 +1369,7 @@ function addPaperFromURL() {
 }
 
 async function addPaperFromURLGo(url) {
-  // Try CORS proxies in order
-  const status = document.createElement('div');
-  status.style.cssText = 'position:fixed;top:20px;right:20px;background:#333;color:white;padding:12px;border-radius:6px;z-index:9999;font-size:13px;';
-  status.textContent = 'Fetching...';
-  document.body.appendChild(status);
-
+  toast('Fetching...', 'info', 2000);
   let text = null, lastErr = '';
   for (const proxy of CORS_PROXIES) {
     try {
@@ -1820,61 +1378,46 @@ async function addPaperFromURLGo(url) {
       lastErr = proxy + ' → ' + res.status;
     } catch (e) { lastErr = proxy + ' → ' + e.message; }
   }
-  if (!text) {
-    status.textContent = 'All proxies failed. ' + lastErr + ' — try paste instead.';
-    setTimeout(() => status.remove(), 5000);
-    return;
-  }
+  if (!text) { toast('All proxies failed. Try paste instead.', 'error', 5000); return; }
 
-  // Try JSON first, then text parse
   let questions = [];
   try {
     const j = JSON.parse(text);
     questions = j.questions || (Array.isArray(j) ? j : []);
-  } catch (e) {
-    questions = parsePastyPaper(text);
-  }
+  } catch (e) { questions = parsePastyPaper(text); }
 
-  if (!questions.length) {
-    status.textContent = 'No questions parsed. Format must be Q:/A)B)C)D)/ANS:/EXP: blocks. Try paste instead.';
-    status.style.background = '#e74c3c';
-    setTimeout(() => status.remove(), 6000);
-    return;
-  }
+  if (!questions.length) { toast('No questions parsed. Try paste instead.', 'error', 5000); return; }
 
   const id = 'url-' + Date.now();
   const paper = {
     id,
-    year: new URL(url).hostname || 'From URL',
+    year: (() => { try { return new URL(url).hostname; } catch { return 'From URL'; } })(),
     shift: new Date().toLocaleDateString(),
     source: url,
     questions
   };
   savePaper(paper);
-  status.textContent = `✓ Added ${questions.length} questions from ${paper.year}`;
-  status.style.background = '#2ecc71';
-  setTimeout(() => status.remove(), 3000);
+  toast(`✓ Added ${questions.length} questions from ${paper.year}`, 'success');
 }
 
 function addPaperFromPaste() {
-  // Open a modal with textarea
   const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.className = 'fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4';
   modal.innerHTML = `
-    <div style="background:white;padding:24px;border-radius:8px;max-width:600px;width:90%;max-height:80vh;overflow:auto;">
-      <h2 style="margin:0 0 8px;">📋 Add Past Paper (paste)</h2>
-      <p style="font-size:12px;color:#787774;margin:0 0 12px;">Format — one blank line between questions:</p>
-      <pre style="font-size:11px;background:#f7f6f3;padding:8px;border-radius:4px;margin:0 0 12px;">Q: Question text
+    <div class="bg-base-100 rounded-lg shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-auto p-6">
+      <h2 class="text-xl font-bold mb-2">📋 Add Past Paper (paste)</h2>
+      <p class="text-xs text-base-content/60 mb-3">Format — one blank line between questions:</p>
+      <pre class="bg-base-200 p-3 rounded text-xs font-mono mb-3 overflow-x-auto">Q: Question text
 A) Option 1
 B) Option 2
 C) Option 3
 D) Option 4
 ANS: B
 EXP: Why B is correct</pre>
-      <textarea id="pastePaperText" rows="12" style="width:100%;padding:8px;border:1px solid #ebebeb;border-radius:4px;font-family:monospace;font-size:12px;" placeholder="Paste here..."></textarea>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
-        <button id="cancelPaste" style="padding:8px 16px;border:1px solid #ebebeb;background:white;border-radius:4px;cursor:pointer;">Cancel</button>
-        <button id="savePaste" style="padding:8px 16px;background:#2383e2;color:white;border:none;border-radius:4px;cursor:pointer;">Save Paper</button>
+      <textarea id="pastePaperText" rows="10" class="textarea textarea-bordered w-full font-mono text-xs" placeholder="Paste here..."></textarea>
+      <div class="flex gap-2 justify-end mt-3">
+        <button id="cancelPaste" class="btn btn-ghost">Cancel</button>
+        <button id="savePaste" class="btn btn-primary">Save Paper</button>
       </div>
     </div>
   `;
@@ -1882,20 +1425,14 @@ EXP: Why B is correct</pre>
   modal.querySelector('#cancelPaste').onclick = () => modal.remove();
   modal.querySelector('#savePaste').onclick = () => {
     const text = modal.querySelector('#pastePaperText').value.trim();
-    if (!text) { alert('Paste some text first.'); return; }
+    if (!text) { toast('Paste some text first', 'warning'); return; }
     const questions = parsePastyPaper(text);
-    if (!questions.length) { alert('No questions parsed. Check the format.'); return; }
+    if (!questions.length) { toast('No questions parsed. Check the format.', 'error'); return; }
     const id = 'paste-' + Date.now();
-    const paper = {
-      id,
-      year: 'Pasted',
-      shift: new Date().toLocaleDateString(),
-      source: 'Manual paste',
-      questions
-    };
+    const paper = { id, year: 'Pasted', shift: new Date().toLocaleDateString(), source: 'Manual paste', questions };
     savePaper(paper);
     modal.remove();
-    alert(`✓ Added ${questions.length} questions to Past Papers sidebar.`);
+    toast(`✓ Added ${questions.length} questions to Past Papers`, 'success');
   };
 }
 
@@ -1908,39 +1445,7 @@ function startPaperPractice(id) {
   startPracticeSession();
 }
 
-// Update renderPracticeSetup to include Past Papers as a source
-const _origRenderSourceOptions = renderSourceOptions;
-renderSourceOptions = function() {
-  _origRenderSourceOptions();
-  // Append Past Papers option if any exist
-  const papers = getPapers();
-  if (!papers.length) return;
-  const srcEl = document.getElementById('sourceOptions');
-  const btns = document.querySelectorAll('.source-picker button');
-  // Add a 4th source button dynamically
-  if (!document.querySelector('.source-picker button[data-src="papers"]')) {
-    const btn = document.createElement('button');
-    btn.dataset.src = 'papers';
-    btn.className = practiceState.source === 'papers' ? 'active' : '';
-    btn.textContent = '📋 Past Papers';
-    btn.onclick = () => setPracticeSource('papers');
-    btns[0]?.parentElement?.appendChild(btn);
-  }
-  // Render paper list when source is 'papers'
-  if (practiceState.source === 'papers') {
-    srcEl.innerHTML = `
-      <p style="font-size:13px;color:#787774;margin-top:16px;">Pick a paper (${papers.length} saved):</p>
-      ${papers.map(p => `
-        <button class="primary" style="display:block;width:100%;margin:6px 0;padding:12px;background:white;border:1px solid #ebebeb;border-radius:6px;cursor:pointer;text-align:left;font-size:14px;color:#333;" onclick="startPaperPractice('${p.id}')">
-          📄 <b>${p.year}${p.shift ? ' · ' + p.shift : ''}</b>
-          <div style="font-size:11px;color:#9b9a97;margin-top:2px;">${p.questions.length} Qs · ${p.source || 'no source'}</div>
-        </button>
-      `).join('')}
-    `;
-  }
-};
-
-// Init
+// ===== Init =====
 loadFromStorage();
 loadBundledPapers().then(renderPapersList);
 renderHome();
