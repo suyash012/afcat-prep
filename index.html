@@ -401,19 +401,24 @@ tailwind.config = {
     </div>
 
     <div id="topicView" class="hidden">
-      <div id="topicCover" class="h-32 md:h-40 relative">
-        <div class="absolute bottom-3 right-4 flex gap-2 z-10">
-          <button onclick="addBlockBelow()" class="bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white">+ Add Block</button>
+      <div id="topicCover" class="h-20 md:h-24 relative">
+        <div class="absolute bottom-3 right-4 flex flex-wrap gap-2 z-10 justify-end max-w-full">
+          <button onclick="showTopicMode('briefing')" id="modeBriefingBtn" class="bg-secondary text-on-secondary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded">⚡ Briefing</button>
+          <button onclick="showTopicMode('editor')" id="modeEditorBtn" class="bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white">✎ Editor</button>
+          <button onclick="regenerateBriefing()" class="bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white">↻ Regenerate</button>
+          <button onclick="addBlockBelow()" class="bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white">+ Block</button>
           <button onclick="aiAssist()" class="bg-secondary text-on-secondary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:opacity-90">✨ AI</button>
           <button onclick="showView('notes')" class="bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white">← Notes</button>
         </div>
       </div>
-      <div class="max-w-4xl mx-auto px-4 md:px-12 pt-6">
-        <div id="topicIcon" class="text-5xl md:text-6xl mb-2 cursor-pointer" contenteditable="true">📚</div>
-        <input id="topicTitle" class="text-3xl md:text-4xl font-bold text-primary w-full bg-transparent border-0 focus:outline-none mb-1" value="Topic" readonly>
-        <div id="topicMeta" class="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Subject · 0 blocks</div>
+      <div class="max-w-4xl mx-auto px-4 md:px-12 pt-3">
+        <div id="topicIcon" class="text-3xl md:text-4xl mb-1 cursor-pointer" contenteditable="true">📚</div>
+        <input id="topicTitle" class="text-xl md:text-2xl font-bold text-primary w-full bg-transparent border-0 focus:outline-none mb-0" value="Topic" readonly>
+        <div id="topicMeta" class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Subject · 0 blocks</div>
       </div>
       <div class="max-w-4xl mx-auto px-4 md:px-12 py-6 pb-48" id="blocksContainer"></div>
+      <!-- Briefing area (default view) -->
+      <div id="topicBriefing" class="max-w-[1440px] mx-auto px-4 md:px-8 py-6 pb-24 hidden"></div>
     </div>
 
     <!-- ===== VIEW: ENGAGEMENT (Practice simulator) ===== -->
@@ -444,8 +449,8 @@ tailwind.config = {
     <h3 class="font-bold text-lg mb-1 flex items-center gap-2">
       <span class="material-symbols-outlined text-secondary">tune</span> Mission Settings
     </h3>
-    <p class="text-xs text-on-surface-variant mb-4">Configure AI tutor. Key stored only in this browser.</p>
-    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1">Mistral API Key</label>
+    <p class="text-xs text-on-surface-variant mb-4">Configure AI tutor + web search. Keys stored only in this browser.</p>
+    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1">Mistral API Key <span class="text-error">*</span></label>
     <input type="password" id="mistralKey" placeholder="Paste your Mistral API key" class="w-full border border-outline-variant rounded px-3 py-2 text-sm focus:border-secondary focus:outline-none">
     <p class="text-[11px] text-on-surface-variant mt-1">Get one at <a href="https://console.mistral.ai/" target="_blank" class="text-secondary font-bold">console.mistral.ai</a></p>
     <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mt-3 mb-1">Model</label>
@@ -454,6 +459,9 @@ tailwind.config = {
       <option value="mistral-medium-latest">mistral-medium-latest</option>
       <option value="open-mistral-7b">open-mistral-7b (free tier)</option>
     </select>
+    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mt-3 mb-1">Tavily Web Search API Key <span class="text-on-surface-variant">(optional)</span></label>
+    <input type="password" id="tavilyKey" placeholder="Paste your Tavily API key (for web search)" class="w-full border border-outline-variant rounded px-3 py-2 text-sm focus:border-secondary focus:outline-none">
+    <p class="text-[11px] text-on-surface-variant mt-1">Free at <a href="https://tavily.com/" target="_blank" class="text-secondary font-bold">tavily.com</a> — 1000 searches/month. Used to fetch current data before briefing generation.</p>
     <div id="settingsStatus" class="text-sm mt-3 min-h-[20px]"></div>
     <div class="flex justify-end gap-2 mt-4">
       <button class="px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded hover:bg-surface-container" onclick="closeSettings()">Cancel</button>
@@ -923,7 +931,8 @@ function safeHostname(src) {
   try { return new URL(src).hostname; } catch (e) { return src.length > 30 ? src.slice(0, 30) + '…' : src; }
 }
 
-// ===== TOPIC VIEW (block editor) =====
+// ===== TOPIC VIEW (block editor + briefing) =====
+let topicMode = 'briefing';
 function openTopic(subject, topicName) {
   const data = topicsData[subject][topicName];
   currentState = { subject, topic: topicName, blocks: JSON.parse(JSON.stringify(data.blocks)) };
@@ -934,7 +943,27 @@ function openTopic(subject, topicName) {
   document.getElementById('topicMeta').textContent = `${capitalize(subject)} · ${currentState.blocks.length} blocks`;
   const cover = document.getElementById('topicCover');
   cover.style.background = data.cover;
-  renderBlocks();
+  showTopicMode(topicMode || 'briefing');
+}
+function showTopicMode(mode) {
+  topicMode = mode;
+  const blocks = document.getElementById('blocksContainer');
+  const brief = document.getElementById('topicBriefing');
+  const bBrief = document.getElementById('modeBriefingBtn');
+  const bEdit = document.getElementById('modeEditorBtn');
+  if (mode === 'briefing') {
+    blocks.classList.add('hidden');
+    brief.classList.remove('hidden');
+    if (bBrief) { bBrief.className = 'bg-secondary text-on-secondary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded'; }
+    if (bEdit) { bEdit.className = 'bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white'; }
+    showBriefingEmptyState();
+  } else {
+    brief.classList.add('hidden');
+    blocks.classList.remove('hidden');
+    if (bBrief) { bBrief.className = 'bg-white/90 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-white'; }
+    if (bEdit) { bEdit.className = 'bg-secondary text-on-secondary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded'; }
+    renderBlocks();
+  }
 }
 
 function renderBlocks() {
@@ -1082,6 +1111,7 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function openSettings() {
   document.getElementById('mistralKey').value = localStorage.getItem('mistralKey') || '';
   document.getElementById('mistralModel').value = localStorage.getItem('mistralModel') || 'mistral-small-latest';
+  document.getElementById('tavilyKey').value = localStorage.getItem('tavilyKey') || '';
   document.getElementById('settingsStatus').textContent = '';
   document.getElementById('settingsModal').showModal();
 }
@@ -1089,6 +1119,7 @@ function closeSettings() { document.getElementById('settingsModal').close(); }
 function saveSettings() {
   localStorage.setItem('mistralKey', document.getElementById('mistralKey').value.trim());
   localStorage.setItem('mistralModel', document.getElementById('mistralModel').value);
+  localStorage.setItem('tavilyKey', document.getElementById('tavilyKey').value.trim());
   document.getElementById('settingsStatus').innerHTML = '<span class="text-green-600 font-semibold">✓ Saved</span>';
   toast('Settings saved', 'success');
   setTimeout(closeSettings, 800);
@@ -1110,21 +1141,329 @@ async function testMistral() {
 }
 
 // ===== Mistral =====
-async function callMistral(prompt, systemPrompt = '') {
+async function callMistral(prompt, systemPrompt = '', opts = {}) {
   const key = localStorage.getItem('mistralKey');
   if (!key) throw new Error('No API key. Open Settings (⚙️) and add your Mistral key.');
   const model = localStorage.getItem('mistralModel') || 'mistral-small-latest';
   const messages = [];
   if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
   messages.push({ role: 'user', content: prompt });
+  const body = { model, messages, max_tokens: opts.max_tokens || 2000, temperature: opts.temperature ?? 0.7 };
+  if (opts.json) body.response_format = { type: 'json_object' };
   const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-    body: JSON.stringify({ model, messages, max_tokens: 2000, temperature: 0.7 })
+    body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error('Mistral API error: ' + res.status);
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error('Mistral API error: ' + res.status + (err ? ' — ' + err.slice(0, 200) : ''));
+  }
   const data = await res.json();
   return data.choices[0].message.content;
+}
+
+// ===== Tavily Web Search =====
+async function callTavily(query) {
+  const key = localStorage.getItem('tavilyKey');
+  if (!key) return null;
+  try {
+    const res = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: key, query, search_depth: 'basic', max_results: 5, include_answer: false })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.results || []).map(r => `${r.title}: ${r.content}`).join('\n\n');
+  } catch (e) { console.warn('Tavily failed:', e); return null; }
+}
+
+// ===== Briefing generation (one-pager per topic) =====
+const BRIEFING_KEY = 'topicBriefings';
+
+function getBriefing(subject, topicName) {
+  try {
+    const all = JSON.parse(localStorage.getItem(BRIEFING_KEY) || '{}');
+    return all[subject]?.[topicName] || null;
+  } catch (e) { return null; }
+}
+function saveBriefing(subject, topicName, briefing) {
+  try {
+    const all = JSON.parse(localStorage.getItem(BRIEFING_KEY) || '{}');
+    if (!all[subject]) all[subject] = {};
+    all[subject][topicName] = { ...briefing, generatedAt: new Date().toISOString() };
+    localStorage.setItem(BRIEFING_KEY, JSON.stringify(all));
+  } catch (e) { console.warn('saveBriefing failed:', e); }
+}
+function clearBriefing(subject, topicName) {
+  try {
+    const all = JSON.parse(localStorage.getItem(BRIEFING_KEY) || '{}');
+    if (all[subject]?.[topicName]) delete all[subject][topicName];
+    localStorage.setItem(BRIEFING_KEY, JSON.stringify(all));
+  } catch (e) {}
+}
+
+async function generateTopicBriefing(subject, topicName) {
+  if (!localStorage.getItem('mistralKey')) {
+    toast('Add your Mistral API key in Settings (⚙️) first', 'warning');
+    return null;
+  }
+  const subjMap = { English: 'English', Mathematics: 'Math', 'General Awareness': 'General Awareness', Reasoning: 'Reasoning' };
+  const subjectName = subjMap[subject] || subject;
+  const topicKey = `${subjectName}: ${topicName}`;
+
+  // Step 1: Web search (optional, current data)
+  let webCtx = '';
+  const tavilyOut = await callTavily(`${topicName} for AFCAT ${subjectName} exam preparation key concepts ${new Date().getFullYear()}`).catch(() => null);
+  if (tavilyOut) webCtx = `\n\nRecent web data:\n${tavilyOut.slice(0, 1800)}`;
+
+  // Step 2: Mistral generates structured JSON
+  const sys = `You are an AFCAT (Air Force Common Admission Test) exam prep AI. Generate a comprehensive tactical one-pager briefing as a JSON object. Return ONLY valid JSON, no markdown, no commentary. Use this exact structure:
+{
+  "hero": { "title": "Strategic Briefing: <TOPIC>", "subtitle": "<one-sentence importance>" },
+  "main": {
+    "title": "<Command Center / Module title for the subject>",
+    "code": "SYLLABUS V2.0 // <SHORT_CODE>",
+    "categories": [
+      { "name": "01. <Section>", "items": [ { "label": "<concept>", "content": "<brief description with formula/example>" } ] }
+    ]
+  },
+  "weightage": [ { "subject": "General Awareness", "percent": 30 }, { "subject": "Verbal Ability (English)", "percent": 25 }, { "subject": "Numerical Ability", "percent": 20 }, { "subject": "Military Aptitude (Reasoning)", "percent": 25 } ],
+  "verbal": null,
+  "intel": null,
+  "questions": [ { "subject": "Math", "text": "<Q1>" }, { "subject": "English", "text": "<Q2>" }, { "subject": "GA", "text": "<Q3>" }, { "subject": "Reasoning", "text": "<Q4>" } ],
+  "footer": { "tagline": "Mission Ready // Standard Protocol", "links": ["Notes", "Simulator", "Stats"] }
+}
+Rules:
+- For English topics, set "verbal" to { "title": "Verbal Command Module", "sections": [ { "name": "Vocabulary Builder", "items": [ {"label":"word","content":"meaning + eg"} ] }, { "name": "Grammar Protocols", "items": [...] }, { "name": "Comprehension Logic", "items": [...] } ] } and set main.title="Verbal Command Module".
+- For General Awareness topics, set "intel" to { "title": "Tactical Intel", "overview": [ { "title": "Section", "content": "bullets / facts" } ] } and set main.title="Tactical Intel Module".
+- For Math/Reasoning topics, leave verbal and intel as null.
+- 3-4 main categories, 3-4 items each. Under 1000 words total. Exam-focused, accurate.`;
+  const prompt = `Topic: "${topicName}" (Subject: ${subjectName}). AFCAT exam context.${webCtx}`;
+
+  const text = await callMistral(prompt, sys, { json: true, max_tokens: 3000, temperature: 0.5 });
+  let briefing;
+  try {
+    briefing = JSON.parse(text);
+  } catch (e) {
+    // Try to extract JSON from response
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) briefing = JSON.parse(m[0]);
+    else throw new Error('AI did not return valid JSON');
+  }
+  briefing._meta = { subject, topicName, subjectName, topicKey, usedWebSearch: !!tavilyOut };
+  return briefing;
+}
+
+function renderTopicBriefing(briefing) {
+  const m = briefing._meta || {};
+  const w = (s) => escapeHtml(s || '');
+  const items = (arr) => (arr || []).map(it => `
+    <div class="bg-surface-container-low border border-outline-variant rounded p-3">
+      <div class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1">${w(it.label)}</div>
+      <div class="text-xs text-on-surface leading-relaxed">${w(it.content)}</div>
+    </div>`).join('');
+
+  const categories = (briefing.main?.categories || []).map(c => `
+    <div class="mb-4">
+      <h4 class="text-xs font-bold uppercase tracking-widest text-primary mb-2 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[14px] text-secondary">chevron_right</span>${w(c.name)}
+      </h4>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${items(c.items)}</div>
+    </div>`).join('');
+
+  const weightage = (briefing.weightage || []).map(b => `
+    <div>
+      <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1">
+        <span class="text-on-surface">${w(b.subject)}</span>
+        <span class="text-secondary">${b.percent}%</span>
+      </div>
+      <div class="h-2 bg-surface-container-high rounded overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-secondary to-primary" style="width:${b.percent}%"></div>
+      </div>
+    </div>`).join('');
+
+  const verbal = briefing.verbal ? `
+    <div class="md:col-span-4 bg-white border-l-4 border-secondary rounded-r-lg p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-primary">${w(briefing.verbal.title)}</h3>
+        <span class="text-[9px] font-mono text-on-surface-variant">LANG_PROTO</span>
+      </div>
+      <div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+        ${(briefing.verbal.sections || []).map(s => `
+          <div>
+            <h4 class="text-xs font-bold text-primary mb-2">${w(s.name)}</h4>
+            <div class="space-y-1.5">
+              ${(s.items || []).map(it => `
+                <div class="text-xs flex gap-2"><span class="text-secondary font-bold">▸</span><span class="text-on-surface">${w(it.label)} — ${w(it.content)}</span></div>
+              `).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const intel = briefing.intel ? `
+    <div class="md:col-span-8 bg-white border border-outline-variant rounded-lg p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-primary">${w(briefing.intel.title)}</h3>
+        <span class="text-[9px] font-mono text-on-surface-variant">INTEL_FEED</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        ${(briefing.intel.overview || []).map(o => `
+          <div class="bg-surface-container-low border border-outline-variant rounded p-3">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1">${w(o.title)}</div>
+            <div class="text-xs text-on-surface leading-relaxed">${w(o.content)}</div>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const questions = (briefing.questions || []).map((q, i) => `
+    <tr class="border-b border-outline-variant last:border-0 hover:bg-surface-container-low">
+      <td class="py-3 px-3 text-[10px] font-bold uppercase tracking-widest text-secondary">${w(q.subject)}</td>
+      <td class="py-3 px-3 text-xs text-on-surface">${w(q.text)}</td>
+      <td class="py-3 px-3 text-right">
+        <button onclick="openPractice('${w(m.subject)}')" class="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-secondary">Attempt →</button>
+      </td>
+    </tr>`).join('');
+
+  const links = (briefing.footer?.links || ['Notes', 'Simulator', 'Stats']).map(l => {
+    const map = { Notes: "showView('notes')", Simulator: "openPractice()" };
+    const fn = map[l] || '';
+    return `<button onclick="${fn}" class="hover:text-secondary uppercase tracking-widest text-[10px] font-bold">${w(l)}</button>`;
+  }).join(' • ');
+
+  const ts = briefing.generatedAt ? new Date(briefing.generatedAt).toLocaleString() : '';
+  const webBadge = m.usedWebSearch ? `<span class="text-[9px] font-mono text-green-600 ml-2">● Web-sourced</span>` : '';
+
+  return `
+    <!-- Hero -->
+    <header class="mb-6">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-[0.3em] text-secondary mb-1">Strategic Multi-Subject Briefing</div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">${w(briefing.hero?.title || m.topicKey)}</h1>
+          <p class="text-sm text-on-surface-variant mt-1 max-w-2xl">${w(briefing.hero?.subtitle || '')}${webBadge}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select onchange="switchBriefingSubject(this.value)" class="text-[10px] font-bold uppercase tracking-widest bg-primary text-on-primary px-3 py-2 rounded border-0 cursor-pointer">
+            <option selected>${w(m.subjectName || m.subject)}</option>
+            <option>English</option><option>Math</option><option>General Awareness</option><option>Reasoning</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
+
+      <!-- Main command card (8 cols, 2 rows) -->
+      <div class="md:col-span-8 md:row-span-2 bg-white border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-primary text-on-primary px-5 py-3 flex items-center justify-between">
+          <h3 class="text-sm font-bold uppercase tracking-widest">${w(briefing.main?.title || 'Command Center')}</h3>
+          <span class="text-[9px] font-mono opacity-70">${w(briefing.main?.code || 'SYLLABUS V2.0')}</span>
+        </div>
+        <div class="p-5 max-h-[700px] overflow-y-auto">${categories || '<p class="text-xs text-on-surface-variant">No content yet.</p>'}</div>
+      </div>
+
+      <!-- Pattern Recon (4 cols) -->
+      <div class="md:col-span-4 bg-white border border-outline-variant rounded-lg p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant">
+          <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Pattern Recon</h3>
+          <span class="text-[9px] font-mono text-on-surface-variant">%AGE</span>
+        </div>
+        <div class="space-y-3">${weightage}</div>
+        <p class="text-[10px] text-on-surface-variant mt-3 italic">${w(m.subjectName)} weightage approx.</p>
+      </div>
+
+      <!-- Simulator widget (4 cols, fills 2nd row right) -->
+      <div class="md:col-span-4 bg-primary text-on-primary rounded-lg p-5 shadow-md flex flex-col">
+        <div class="text-[10px] font-mono uppercase tracking-[0.3em] opacity-70 mb-1">Past Paper Simulator</div>
+        <h3 class="text-lg font-bold mb-1">${w(m.topicName)}</h3>
+        <p class="text-xs opacity-80 mb-4">Tested under standard AFCAT conditions: 100 questions, 120 minutes.</p>
+        <div class="grid grid-cols-3 gap-2 text-center mb-4">
+          <div><div class="text-lg font-bold">100</div><div class="text-[9px] uppercase opacity-70">Qs</div></div>
+          <div><div class="text-lg font-bold">120</div><div class="text-[9px] uppercase opacity-70">Min</div></div>
+          <div><div class="text-lg font-bold">+3</div><div class="text-[9px] uppercase opacity-70">/-1</div></div>
+        </div>
+        <button onclick="openPractice('${w(m.subject)}')" class="mt-auto bg-secondary text-on-secondary text-xs font-bold uppercase tracking-widest py-2.5 rounded hover:opacity-90">Launch Sortie →</button>
+      </div>
+
+      ${verbal}
+      ${intel}
+
+      <!-- Active Engagement (8 cols) -->
+      <div class="md:col-span-8 bg-white border border-outline-variant rounded-lg p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant">
+          <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Active Engagement</h3>
+          <span class="text-[9px] font-mono text-on-surface-variant">PRACTICE</span>
+        </div>
+        <table class="w-full">
+          <thead><tr class="border-b border-outline-variant text-left">
+            <th class="py-2 px-3 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Subject</th>
+            <th class="py-2 px-3 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Question</th>
+            <th class="py-2 px-3"></th>
+          </tr></thead>
+          <tbody>${questions}</tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <footer class="mt-8 pt-4 border-t border-outline-variant flex flex-wrap items-center justify-between gap-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px] text-secondary">military_tech</span>
+        ${w(briefing.footer?.tagline || 'Mission Ready')}
+      </div>
+      <div>${links}</div>
+      <div class="font-mono opacity-60">${w(ts)}</div>
+    </footer>`;
+}
+
+function switchBriefingSubject(subj) {
+  // Find first topic of the picked subject and open it
+  const data = topicsData[subj] || {};
+  const first = Object.keys(data)[0];
+  if (first) openTopic(subj, first);
+}
+
+async function regenerateBriefing() {
+  if (!currentState.topic) return;
+  const subject = currentState.subject;
+  const topic = currentState.topic;
+  const container = document.getElementById('topicBriefing');
+  container.innerHTML = `<div class="text-center py-16"><div class="text-2xl mb-2">⏳</div><div class="text-xs uppercase tracking-widest text-on-surface-variant">Generating AI briefing…</div></div>`;
+  try {
+    const briefing = await generateTopicBriefing(subject, topic);
+    if (!briefing) return;
+    saveBriefing(subject, topic, briefing);
+    container.innerHTML = renderTopicBriefing(briefing);
+    renderMath();
+    toast('Briefing regenerated', 'success');
+  } catch (e) {
+    container.innerHTML = `<div class="text-center py-16 text-error"><div class="text-sm font-bold">Generation failed</div><div class="text-xs mt-2">${escapeHtml(e.message)}</div><button onclick="regenerateBriefing()" class="mt-4 px-3 py-1.5 bg-primary text-on-primary text-xs font-bold uppercase rounded">Retry</button></div>`;
+    toast('Generation failed: ' + e.message, 'error');
+  }
+}
+
+function showBriefingEmptyState() {
+  const subject = currentState.subject;
+  const topic = currentState.topic;
+  const container = document.getElementById('topicBriefing');
+  const cached = getBriefing(subject, topic);
+  if (cached) {
+    container.innerHTML = renderTopicBriefing(cached);
+    renderMath();
+    return;
+  }
+  const hasTavily = !!localStorage.getItem('tavilyKey');
+  container.innerHTML = `
+    <div class="text-center py-16 max-w-2xl mx-auto">
+      <div class="text-6xl mb-4">🎯</div>
+      <h2 class="text-2xl font-bold text-primary mb-2">Generate Strategic Briefing</h2>
+      <p class="text-sm text-on-surface-variant mb-6">AI will build a one-pager for <b>${escapeHtml(topic)}</b> using ${hasTavily ? '<b>Mistral + live web search</b>' : '<b>Mistral</b> (add Tavily key in Settings for web search)'}. Cached after first run.</p>
+      <button onclick="regenerateBriefing()" class="bg-secondary text-on-secondary text-sm font-bold uppercase tracking-widest px-6 py-3 rounded hover:opacity-90">⚡ Generate Now</button>
+      <p class="text-[10px] text-on-surface-variant mt-6 uppercase tracking-widest">Or use the block editor below to add your own notes.</p>
+    </div>`;
 }
 
 // ===== AI Assist =====
@@ -1560,6 +1899,11 @@ function stopTimer() { if (practiceState.timerInterval) clearInterval(practiceSt
 function renderMathInElement(el) {
   if (window.renderMathInElement) {
     try { renderMathInElement(el, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false }); } catch(e) {}
+  }
+}
+function renderMath(root) {
+  (root || document).querySelectorAll('.math, [data-math], .briefing-content').forEach(el => renderMathInElement(el));
+}
   }
 }
 
