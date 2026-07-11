@@ -774,7 +774,7 @@ function renderNotesHome(filter = '') {
             <div class="flex justify-between items-start">
               <div>
                 <div class="font-bold text-sm text-primary">📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
-                <div class="text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">${p.questions.length} Qs · ${p.source ? new URL(p.source).hostname : 'Manual'}</div>
+                <div class="text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">${p.questions.length} Qs · ${safeHostname(p.source)}</div>
               </div>
               <button class="opacity-0 group-hover:opacity-100 text-error text-xs" onclick="event.stopPropagation(); deletePaper('${p.id}')" title="Delete">
                 <span class="material-symbols-outlined text-[18px]">delete</span>
@@ -800,6 +800,11 @@ function getTopicCount() {
   let count = 0;
   for (const subj in topicsData) count += Object.keys(topicsData[subj] || {}).length;
   return count;
+}
+
+function safeHostname(src) {
+  if (!src) return 'Manual';
+  try { return new URL(src).hostname; } catch (e) { return src.length > 30 ? src.slice(0, 30) + '…' : src; }
 }
 
 // ===== TOPIC VIEW (block editor) =====
@@ -1162,7 +1167,7 @@ EXP: Why B is correct</pre>
         ${papers.map(p => `
           <button class="w-full text-left bg-primary-container border border-outline-variant hover:border-secondary p-3 rounded" onclick="startPaperPractice('${p.id}')">
             <div class="font-bold text-on-primary">📄 ${p.year}${p.shift ? ' · ' + p.shift : ''}</div>
-            <div class="text-xs text-on-primary-container mt-1">${p.questions.length} Qs · ${p.source || 'no source'}</div>
+            <div class="text-xs text-on-primary-container mt-1">${p.questions.length} Qs · ${safeHostname(p.source)}</div>
           </button>
         `).join('') || '<p class="text-sm text-on-primary-container">No papers yet. Add from URL or paste →</p>'}
       </div>
